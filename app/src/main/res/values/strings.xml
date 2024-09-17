@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Fantasy_Basketball</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="default_web_client_id">478992634864-u0birukkhnk95q4c3cj0o2gnnkhtt2fn.apps.googleusercontent.com</string>
+
 </resources>
