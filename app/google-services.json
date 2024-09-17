@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "478992634864",
+    "project_id": "fantasybasketballmanager",
+    "storage_bucket": "fantasybasketballmanager.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478992634864:android:e395fb453ce988f7698335",
+        "android_client_info": {
+          "package_name": "com.example.fantasy_basketball"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478992634864-hnishkhsv89jvk3sc55fed5tvm3vqb1v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fantasy_basketball",
+            "certificate_hash": "85a8ad4343035ca2c8e5ab15a7140a58b66ab83a"
+          }
+        },
+        {
+          "client_id": "478992634864-u0birukkhnk95q4c3cj0o2gnnkhtt2fn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgOzfxlky9QzrE313FavpitQHut5UKKyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478992634864-gjradpgmtful4ek7dreodidlvkd0d2sp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
