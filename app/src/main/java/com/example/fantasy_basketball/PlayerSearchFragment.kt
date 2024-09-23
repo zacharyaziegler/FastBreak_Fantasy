@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import com.example.fantasy_basketball.placeholder.PlaceholderContent
 
 /**
  * A fragment representing a list of Items.
