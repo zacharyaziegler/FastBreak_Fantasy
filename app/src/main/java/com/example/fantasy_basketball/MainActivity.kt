@@ -2,6 +2,7 @@ package com.example.fantasy_basketball
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fantasy_basketball.R
 import com.google.firebase.auth.FirebaseAuth

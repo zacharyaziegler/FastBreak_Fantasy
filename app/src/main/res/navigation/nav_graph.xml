@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_homeFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_playerSearchFragment"
+            app:destination="@id/playerSearchFragment" />
     </fragment>
 
 
@@ -36,4 +39,11 @@
         android:name="com.example.fantasy_basketball.SignupFragment"
         android:label="Sign Up"
         tools:layout="@layout/fragment_signup" />
+    <!-- PlayerSearchFragment -->
+    <fragment
+        android:id="@+id/playerSearchFragment"
+        android:name="com.example.fantasy_basketball.PlayerSearchFragment"
+        android:label="Player Search"
+        tools:layout="@layout/fragment_player_search" />
+
 </navigation>
