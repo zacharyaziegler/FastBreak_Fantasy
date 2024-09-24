@@ -6,7 +6,10 @@ import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface BasketballHeadAPI {
@@ -15,14 +18,22 @@ interface BasketballHeadAPI {
         @Query("name") playerName: String
     ): Call<PlayerListResponse>
 
-
+    @POST("players/search")
+    fun searchPlayers(
+        @Body body: SearchPlayersRequest
+    ): Call<PlayerListResponse>
 }
+
+data class SearchPlayersRequest(
+    val pageSize: Int = 100,  // Specify how many players to retrieve
+    val firstname: String = "",  // Leave blank to get all players
+    val lastname: String = ""  // Leave blank to get all players
+)
 
 data class Player(
     val playerId: String,
     val firstName: String,
     val lastName: String
-
 )
 
 data class PlayerListResponse(
@@ -30,11 +41,23 @@ data class PlayerListResponse(
 )
 
 data class PlayerAveragesResponse(
+    val team: String,
+    val position: String,
     val points: Double,
+    val rebounds: Double,
     val assists: Double,
-    val rebounds: Double
-
+    val steals: Double,
+    val blocks: Double,
+    val fieldGoalPercentage: Double,
+    val fieldGoalsMade: Double,
+    val fieldGoalsAttempted: Double,
+    val threePointPercentage: Double,
+    val threePointMade: Double,
+    val threePointAttempted: Double,
+    val personalFouls: Double,
+    val turnovers: Double
 )
+
 
 
 val apiKeyInterceptor = Interceptor { chain ->
