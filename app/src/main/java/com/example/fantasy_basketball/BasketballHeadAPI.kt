@@ -30,14 +30,14 @@ data class SearchPlayersRequest(
     val lastname: String = ""  // Leave blank to get all players
 )
 
-data class Player(
+data class Player1(
     val playerId: String,
     val firstName: String,
     val lastName: String
 )
 
 data class PlayerListResponse(
-    val body: List<Player>?
+    val body: List<Player1>?
 )
 
 data class PlayerAveragesResponse(

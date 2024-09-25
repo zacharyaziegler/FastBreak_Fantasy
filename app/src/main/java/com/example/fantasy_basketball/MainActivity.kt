@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
+
         // Initialize FirebaseAuth
         auth = FirebaseAuth.getInstance()
 
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.homeFragment)
         } else {
             // If not signed in, stay on the login fragment
-            navController.navigate(R.id.loginFragment)
+            navController.navigate(R.id.homeFragment)
         }
     }
 }

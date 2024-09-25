@@ -4,44 +4,57 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 /**
  * [RecyclerView.Adapter] that can display a [players].
  *
  */
 // Change to List<dataClass>
-class PlayerAdapter(private var players: List<String>) :
+
+class PlayerAdapter(private var playerList: MutableList<Player>) :
     RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
 
-    // ViewHolder represents each player item
-    class PlayerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val playerName: TextView = itemView.findViewById(R.id.playerName)
-        val playerStats: TextView = itemView.findViewById(R.id.playerStats)
+    // ViewHolder class to represent each item in the RecyclerView
+    class PlayerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val playerName: TextView = view.findViewById(R.id.playerName)
+        val playerPosition: TextView = view.findViewById(R.id.playerPosition)
+        val playerTeam: TextView = view.findViewById(R.id.playerTeam)
+        val playerStatus: TextView = view.findViewById(R.id.playerStatus)
+        val playerAvg: TextView = view.findViewById(R.id.playerAvg)
+        val playerScore: TextView = view.findViewById(R.id.playerPoints)
+        val playerMin: TextView = view.findViewById(R.id.playerMinutes)
+        val playerImage : ImageView = view.findViewById(R.id.playerPicture)
     }
 
-    // Inflate the fragment_player_search_list.xml for each player row
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
+        val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.fragment_player_search_list, parent, false)
-        return PlayerViewHolder(itemView)
+        return PlayerViewHolder(view)
     }
 
-    // Bind the player's name and stats to the TextViews
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
-        val player = players[position]
-        holder.playerName.text = player
-        holder.playerStats.text = player
+        val player = playerList[position]
+        holder.playerName.text = player.name
+        holder.playerPosition.text = player.pos
+        holder.playerTeam.text = player.team
+        holder.playerStatus.text = player.status.toString()
+        holder.playerScore.text = player.score.toString()
+        holder.playerAvg.text = player.avg.toString()
+        holder.playerMin.text = player.min.toString()
+        holder.playerImage.setImageResource(player.imageUrl)
     }
 
-    // Return the total number of players in the list
-    override fun getItemCount(): Int = players.size
+    override fun getItemCount(): Int {
+        return playerList.size
+    }
 
-    // Update the player list in adapter with the filtered list
-    fun updateList(newPlayers: List<String>) {
-        players = newPlayers // Update list of player in the list
-        notifyDataSetChanged() // Notify the RecyclerView to show the new list
-
+    // Update the list when filtering is applied
+    fun updateList(newPlayerList: MutableList<Player>) {
+        playerList = newPlayerList
+        notifyDataSetChanged()
     }
 }
+
 
 
