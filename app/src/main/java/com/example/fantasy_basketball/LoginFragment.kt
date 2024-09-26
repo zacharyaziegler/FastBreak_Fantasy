@@ -58,6 +58,7 @@ class LoginFragment : Fragment() {
         view.findViewById<ImageButton>(R.id.googleSignInButton).setOnClickListener {
             if (isGooglePlayServicesAvailable()) {
                 signInWithGoogle()
+
             } else {
                 Toast.makeText(requireContext(), "Google Play Services not available", Toast.LENGTH_SHORT).show()
             }

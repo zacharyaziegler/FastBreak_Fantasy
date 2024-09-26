@@ -195,7 +195,7 @@ fun fetchAndPrintAllPlayers() {
                     val player = playersArray.getJSONObject(i)
                     val firstName = player.getString("firstName")
                     val lastName = player.getString("lastName")
-                    println("Player: $firstName $lastName")
+                    println("Player: $firstName $lastName $i")
                 }
             }
         }

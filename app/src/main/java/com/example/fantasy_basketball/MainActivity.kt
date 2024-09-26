@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.homeFragment)
         } else {
             // If not signed in, stay on the login fragment
-            navController.navigate(R.id.homeFragment)
+            navController.navigate(R.id.loginFragment)
         }
     }
 }
