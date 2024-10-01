@@ -15,23 +15,13 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [SignupFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SignupFragment : Fragment() {
-    private var param1: String? = null
-    private var param2: String? = null
-
-    // Firebase auth
+    // Firebase auth and Firestore instances
     private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     // EditTexts
     private lateinit var emailEditText: EditText
@@ -44,13 +34,12 @@ class SignupFragment : Fragment() {
     private lateinit var requirementLowercase: TextView
     private lateinit var requirementSpecialChar: TextView
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
+        // Initialize Firebase Auth and Firestore
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
     }
 
     override fun onCreateView(
@@ -58,9 +47,6 @@ class SignupFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_signup, container, false)
-
-        // Initialize Firebase Auth
-        auth = FirebaseAuth.getInstance()
 
         // Find views
         emailEditText = view.findViewById(R.id.signupEmailEditText)
@@ -149,16 +135,7 @@ class SignupFragment : Fragment() {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // Handle back to login button click to navigate to LoginFragment
-        view.findViewById<Button>(R.id.goToLoginButton).setOnClickListener {
-            // Navigate to SignupFragment when the button is clicked
-            findNavController().navigate(R.id.action_signupFragment_to_loginFragment)
-        }
-    }
-
-    // Function to handle user sign-up with Firebase and check password requirements
+    // Function to handle user sign-up with Firebase and Firestore
     private fun signUpUser() {
         val email = emailEditText.text.toString().trim()
         val password = passwordEditText.text.toString().trim()
@@ -227,6 +204,10 @@ class SignupFragment : Fragment() {
                     val user = auth.currentUser
                     user?.sendEmailVerification()?.addOnCompleteListener { verificationTask ->
                         if (verificationTask.isSuccessful) {
+                            // Add user to Firestore
+                            if (user != null) {
+                                addUserToFirestore(user)
+                            }
                             // Show success message and prompt user to verify email
                             Toast.makeText(requireContext(), "Account created. Please verify your email.", Toast.LENGTH_SHORT).show()
                             findNavController().navigate(R.id.action_signupFragment_to_loginFragment)
@@ -242,25 +223,30 @@ class SignupFragment : Fragment() {
             }
     }
 
+    // Add the newly signed-up user to Firestore
+    private fun addUserToFirestore(user: FirebaseUser) {
+        val userRef = db.collection("users").document(user.uid)
 
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SignupFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SignupFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+        userRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                // Add user to Firestore
+                val newUser = hashMapOf(
+                    "email" to user.email,
+                    "leagues" to emptyList<String>(),  // Initialize as empty list
+                    "teams" to emptyList<String>()     // Initialize as empty list
+                )
+                userRef.set(newUser)
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "User added to Firestore", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Error adding user to Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                Toast.makeText(requireContext(), "User already exists in Firestore", Toast.LENGTH_SHORT).show()
             }
+        }.addOnFailureListener { e ->
+            Toast.makeText(requireContext(), "Error checking user in Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 }

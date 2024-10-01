@@ -19,15 +19,19 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var db: FirebaseFirestore
 
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,8 +43,9 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Firebase Auth
+        // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
         // Find email and password input fields
         emailEditText = view.findViewById(R.id.loginEmailEditText)
@@ -58,7 +63,6 @@ class LoginFragment : Fragment() {
         view.findViewById<ImageButton>(R.id.googleSignInButton).setOnClickListener {
             if (isGooglePlayServicesAvailable()) {
                 signInWithGoogle()
-
             } else {
                 Toast.makeText(requireContext(), "Google Play Services not available", Toast.LENGTH_SHORT).show()
             }
@@ -71,7 +75,6 @@ class LoginFragment : Fragment() {
 
         // Handle Sign-Up button click to navigate to SignupFragment
         view.findViewById<Button>(R.id.goToSignupButton).setOnClickListener {
-            // Navigate to SignupFragment when the button is clicked
             findNavController().navigate(R.id.action_loginFragment_to_signupFragment)
         }
     }
@@ -119,7 +122,6 @@ class LoginFragment : Fragment() {
             }
     }
 
-
     // Launch Google Sign-In intent
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
@@ -136,7 +138,6 @@ class LoginFragment : Fragment() {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                // Log detailed exception
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -149,12 +150,44 @@ class LoginFragment : Fragment() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, navigate to HomeFragment
+                    val user = auth.currentUser
+                    if (user != null) {
+                        // Check if user exists in Firestore and add if not
+                        checkAndAddUserToFirestore(user)
+                    }
                     findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                 } else {
                     Toast.makeText(requireContext(), "Google sign-in failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    // Check if user exists in Firestore, add them if they don't
+    private fun checkAndAddUserToFirestore(user: FirebaseUser) {
+        val userRef = db.collection("users").document(user.uid)
+
+        // Check if user exists in Firestore
+        userRef.get().addOnSuccessListener { document ->
+            if (!document.exists()) {
+                // If user doesn't exist, add them to Firestore
+                val newUser = hashMapOf(
+                    "email" to user.email,
+                    "leagues" to emptyList<String>(),  // Initialize as empty
+                    "teams" to emptyList<String>()     // Initialize as empty
+                )
+                userRef.set(newUser)
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "User added to Firestore", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Error adding user to Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            } else {
+                Toast.makeText(requireContext(), "User already exists in Firestore", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { e ->
+            Toast.makeText(requireContext(), "Error checking user in Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun isGooglePlayServicesAvailable(): Boolean {
