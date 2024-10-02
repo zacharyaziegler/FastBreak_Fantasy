@@ -24,4 +24,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Search" />
+
+    <Button
+        android:id="@+id/createLeagueBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create a League" />
 </LinearLayout>

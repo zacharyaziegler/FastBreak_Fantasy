@@ -53,6 +53,7 @@ class HomeFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         displayPlayerStats("leBron james")
         //fetchAndPrintAllPlayers()
+
         // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -74,6 +75,10 @@ class HomeFragment : Fragment() {
         }
         view.findViewById<Button>(R.id.searchButton).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_playerSearchFragment)
+        }
+            // When createLeagueBtn is clicked, navigate to that fragment
+        view.findViewById<Button>(R.id.createLeagueBtn).setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_createLeagueFragment)
         }
     }
 
