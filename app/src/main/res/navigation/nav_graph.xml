@@ -46,6 +46,11 @@
         android:label="Player Search"
         tools:layout="@layout/fragment_player_search" />
 
+    <fragment
+        android:id="@+id/playerStatsFragment"
+        android:name="com.example.fantasy_basketball.PlayerStatsFragment"
+        android:label="Player Stats" />
+
     <action
         android:id="@+id/action_signupFragment_to_loginFragment"
         app:destination="@id/loginFragment" />
