@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         // Initialize FirebaseAuth
+
         auth = FirebaseAuth.getInstance()
 
         // Get the NavHostFragment and NavController
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         navController.navigate(R.id.playerStatsFragment)
+
+
 
         /*
         // Check if the user is already signed in and navigate accordingly
