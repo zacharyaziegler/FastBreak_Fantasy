@@ -1,42 +1,34 @@
 package com.example.fantasy_basketball
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.viewpager2.widget.ViewPager2
+import com.example.fantasy_basketball.matchup_display_logic.MatchupAdapter
+import com.example.fantasy_basketball.matchup_display_logic.MatchupData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var viewPager: ViewPager2
+    private lateinit var matchupAdapter: MatchupAdapter
+    private lateinit var firestore: FirebaseFirestore
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    // Create a list to store matchups
+    private var matchupsList: MutableList<MatchupData> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,12 +41,11 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Firebase Auth
+        // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
-        displayPlayerStats("leBron james")
-        //fetchAndPrintAllPlayers()
+        firestore = FirebaseFirestore.getInstance()
 
-        // Configure Google Sign-In
+        // Initialize Google Sign-In Client
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -62,42 +53,132 @@ class HomeFragment : Fragment() {
 
         googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
 
-        // Handle Logout Button click
-        view.findViewById<Button>(R.id.logoutButton).setOnClickListener {
-            // Log out from Firebase
-            auth.signOut()
+        // Initialize ViewPager2 and adapter
+        viewPager = view.findViewById(R.id.viewPager)
+        matchupAdapter = MatchupAdapter(matchupsList)
+        viewPager.adapter = matchupAdapter
 
-            // Revoke Google access so that the user has to pick an account again
-            googleSignInClient.revokeAccess().addOnCompleteListener {
-                // Navigate back to LoginFragment
-                findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+        // Set "My Teams" title at the top
+        view.findViewById<TextView>(R.id.myTeamsTitle).text = "My Teams"
+
+        // Fetch and display matchups
+        fetchUserMatchups()
+
+        // Logout button functionality
+        view.findViewById<Button>(R.id.logoutButton).setOnClickListener {
+            try {
+                Log.d("HomeFragment", "Logout button clicked")
+
+                // Sign out of Firebase (this works for both Google and regular Firebase Auth)
+                auth.signOut()
+
+                // Check if the user is logged in with Google
+                val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(requireContext())
+                if (googleSignInAccount != null) {
+                    // If the user is signed in with Google, revoke access
+                    googleSignInClient.revokeAccess().addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("HomeFragment", "Google Sign-Out successful")
+                            // After successful sign-out, navigate to the LoginFragment
+                            findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+                        } else {
+                            Log.e("HomeFragment", "Google Sign-Out failed: ${task.exception?.message}")
+                        }
+                    }
+                } else {
+                    // If the user is not signed in with Google, directly navigate to the LoginFragment
+                    findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+                }
+
+            } catch (e: Exception) {
+                Log.e("HomeFragment", "Error during logout: ${e.message}")
             }
         }
-        view.findViewById<Button>(R.id.searchButton).setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_playerSearchFragment)
-        }
-            // When createLeagueBtn is clicked, navigate to that fragment
+
+        // Create a League button functionality
         view.findViewById<Button>(R.id.createLeagueBtn).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_createLeagueFragment)
         }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun fetchUserMatchups() {
+        val userId = auth.currentUser?.uid ?: return
+        val userRef = firestore.collection("users").document(userId)
+
+        // Fetch user details (leagues and teams)
+        userRef.get().addOnSuccessListener { userDocument ->
+            if (userDocument.exists()) {
+                val leagues = userDocument.get("leagues") as? List<String> ?: emptyList()
+                val teams = userDocument.get("teams") as? List<String> ?: emptyList()
+
+                // Loop through leagues and fetch matchups for each league
+                for ((index, leagueId) in leagues.withIndex()) {
+                    val teamId = teams.getOrNull(index) ?: continue
+                    fetchMatchupForTeam(leagueId, teamId)
+                }
+            } else {
+                Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun fetchMatchupForTeam(leagueId: String, teamId: String) {
+        val matchupsCollection = firestore.collection("Leagues").document(leagueId).collection("Matchups")
+
+        // Fetch next pending matchup involving user's team (team1 or team2)
+        matchupsCollection.whereEqualTo("team1ID", teamId).whereEqualTo("result", "pending").limit(1).get()
+            .addOnSuccessListener { matchupsSnapshot ->
+                if (!matchupsSnapshot.isEmpty) {
+                    val matchup = matchupsSnapshot.documents[0]
+                    val opponentTeamId = matchup.getString("team2ID") ?: return@addOnSuccessListener
+                    fetchOpponentDetailsAndAddMatchup(leagueId, teamId, opponentTeamId)
+                } else {
+                    // If no matchups for team1, check if the team is team2
+                    matchupsCollection.whereEqualTo("team2ID", teamId).whereEqualTo("result", "pending").limit(1).get()
+                        .addOnSuccessListener { matchupsSnapshot2 ->
+                            if (!matchupsSnapshot2.isEmpty) {
+                                val matchup = matchupsSnapshot2.documents[0]
+                                val opponentTeamId = matchup.getString("team1ID") ?: return@addOnSuccessListener
+                                fetchOpponentDetailsAndAddMatchup(leagueId, teamId, opponentTeamId)
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun fetchOpponentDetailsAndAddMatchup(leagueId: String, userTeamId: String, opponentTeamId: String) {
+        // Fetch opponent team details
+        firestore.collection("Leagues").document(leagueId).collection("Teams").document(opponentTeamId)
+            .get().addOnSuccessListener { opponentTeamDoc ->
+                if (opponentTeamDoc.exists()) {
+                    val opponentTeamName = opponentTeamDoc.getString("teamName") ?: "Unknown"
+
+                    // Fetch league name and display matchup
+                    firestore.collection("Leagues").document(leagueId).get()
+                        .addOnSuccessListener { leagueDoc ->
+                            if (leagueDoc.exists()) {
+                                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+                                addMatchupToViewPager(userTeamId, opponentTeamName, leagueName, leagueId)
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun addMatchupToViewPager(userTeamId: String, opponentTeamName: String, leagueName: String, leagueId: String) {
+        // Fetch user's team name
+        firestore.collection("Leagues").document(leagueId).collection("Teams").document(userTeamId)
+            .get().addOnSuccessListener { userTeamDoc ->
+                if (userTeamDoc.exists()) {
+                    val userTeamName = userTeamDoc.getString("teamName") ?: "My Team"
+
+                    // Add the matchup to the list and update adapter
+                    val matchupData = MatchupData(userTeamName, opponentTeamName, leagueName)
+                    matchupsList.add(matchupData)
+                    matchupAdapter.notifyDataSetChanged()
+
+                    // Set the league name in the lower section
+                    view?.findViewById<TextView>(R.id.leagueName)?.text = leagueName
                 }
             }
     }

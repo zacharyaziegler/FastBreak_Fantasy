@@ -10,6 +10,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,7 +23,7 @@ class CreateLeagueFragment : Fragment() {
     private lateinit var finalizeLeagueBtn: Button
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
-    // TODO: FIX MATCHUP GENERATION OF 20 MAN LEAGUE
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -81,8 +82,11 @@ class CreateLeagueFragment : Fragment() {
         leagueRef.set(leagueData)
             .addOnSuccessListener {
                 // Create Teams and Matchups Subcollections
-                createTeamsSubcollection(leagueRef.id, leagueSize)
-                createMatchupsSubcollection(leagueRef.id, leagueSize)
+                createTeamsSubcollection(leagueRef.id, leagueSize, commissionerID)
+
+                // After the league is successfully created and teams are assigned,
+                // navigate back to the home screen
+                findNavController().navigate(R.id.action_createLeagueFragment_to_homeFragment)
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Failed to create league: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -90,46 +94,90 @@ class CreateLeagueFragment : Fragment() {
     }
 
     // Create Teams Subcollection
-    private fun createTeamsSubcollection(leagueID: String, leagueSize: Int) {
+    private fun createTeamsSubcollection(leagueID: String, leagueSize: Int, commissionerID: String) {
         val teamsCollection = firestore.collection("Leagues").document(leagueID).collection("Teams")
+        val teamIDList = mutableListOf<String>()
+        var teamsCreated = 0  // Track the number of teams created
 
         for (i in 1..leagueSize) {
             val teamID = UUID.randomUUID().toString()
             val teamData = hashMapOf(
                 "teamName" to "Team $i",
-                "ownerID" to "",  // Owner will be assigned later
+                "ownerID" to if (i == 1) commissionerID else "",  // Assign commissioner to Team 1
                 "roster" to arrayListOf<String>(),
                 "points" to 0,
                 "leagueID" to leagueID,
                 "wins" to 0,
                 "losses" to 0
             )
+
             teamsCollection.document(teamID).set(teamData)
+                .addOnSuccessListener {
+                    teamIDList.add(teamID)  // Add teamID to the list
+                    teamsCreated++
+
+                    // Once all teams are created, assign commissioner and generate matchups
+                    if (teamsCreated == leagueSize) {
+                        // After all teams are created, assign the commissioner to Team 1
+                        assignCommissionerToTeam(leagueID, commissionerID, teamIDList[0])
+
+                        // Generate matchups after commissioner is assigned
+                        createMatchupsSubcollection(leagueID, teamIDList)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to create team: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
-    // Create Matchups Subcollection with 19 weeks of scheduling
-    private fun createMatchupsSubcollection(leagueID: String, leagueSize: Int) {
+
+    // Function to assign the commissioner to Team 1 and update the User's leagues and teams
+    private fun assignCommissionerToTeam(leagueID: String, commissionerID: String, teamID: String) {
+        val userRef = firestore.collection("users").document(commissionerID)
+
+        // Check if the user document exists
+        userRef.get().addOnSuccessListener { userDocument ->
+            if (userDocument.exists()) {
+                val userLeagues = userDocument.get("leagues") as? MutableList<String> ?: mutableListOf()
+                val userTeams = userDocument.get("teams") as? MutableList<String> ?: mutableListOf()
+
+                // Add the leagueID and teamID to the User's fields using arrayUnion
+                userRef.update(
+                    "leagues", com.google.firebase.firestore.FieldValue.arrayUnion(leagueID),
+                    "teams", com.google.firebase.firestore.FieldValue.arrayUnion(teamID)
+                ).addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Commissioner assigned to Team 1", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to update commissioner data: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "User document does not exist", Toast.LENGTH_SHORT).show()
+            }
+        }.addOnFailureListener { e ->
+            Toast.makeText(requireContext(), "Error fetching user data: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
+    // Create Matchups Subcollection in Firestore with 19 weeks of scheduling
+    private fun createMatchupsSubcollection(leagueID: String, teamIDList: List<String>) {
         val matchupsCollection = firestore.collection("Leagues").document(leagueID).collection("Matchups")
 
-        // Generate round-robin matchups for unique weeks (ensures everyone plays everyone once)
-        val teamIDs = (1..leagueSize).toList()
-        val roundRobinSchedule = generateRoundRobinSchedule(teamIDs)
+        val roundRobinSchedule = generateRoundRobinSchedule(teamIDList)
 
-        // Generate 19 weeks of matchups
         val totalWeeks = 19
         val numUniqueWeeks = roundRobinSchedule.size
 
-        // Extra weeks to fill until week 19 (we will reshuffle existing matchups to fill remaining weeks)
-        val extraMatchups = mutableListOf<List<Pair<Int, Int>>>()
+        // Extra weeks to fill until week 19 (reshuffle existing matchups)
+        val extraMatchups = mutableListOf<List<Pair<String, String>>>()
         roundRobinSchedule.forEach { extraMatchups.add(it) }
 
         for (week in 1..totalWeeks) {
             val matchups = if (week <= numUniqueWeeks) {
-                // Use unique matchups for the first N weeks
                 roundRobinSchedule[week - 1]
             } else {
-                // Reuse matchups for remaining weeks using the modulus operator
                 extraMatchups[(week - numUniqueWeeks - 1) % extraMatchups.size]
             }
 
@@ -137,21 +185,20 @@ class CreateLeagueFragment : Fragment() {
         }
     }
 
-
     // Helper to create matchups for a given week
     private fun createMatchupsForWeek(
         matchupsCollection: CollectionReference,
         week: Int,
-        matchups: List<Pair<Int, Int>>
+        matchups: List<Pair<String, String>>
     ) {
         val weekStr = String.format("week%02d", week)
 
         for (matchup in matchups) {
-            val matchupID = "${weekStr}_team${matchup.first}_team${matchup.second}"
+            val matchupID = "${weekStr}_${matchup.first}_${matchup.second}"
             val matchupData = hashMapOf(
                 "week" to weekStr,
-                "team1ID" to "team${matchup.first}",
-                "team2ID" to "team${matchup.second}",
+                "team1ID" to matchup.first,  // Use actual teamID
+                "team2ID" to matchup.second,  // Use actual teamID
                 "team1Score" to 0,
                 "team2Score" to 0,
                 "result" to "pending"
@@ -160,28 +207,26 @@ class CreateLeagueFragment : Fragment() {
         }
     }
 
-    // Generate Round-Robin Schedule (each team plays every other team once)
-    private fun generateRoundRobinSchedule(teams: List<Int>): List<List<Pair<Int, Int>>> {
-        val schedule = mutableListOf<List<Pair<Int, Int>>>()
-        val numTeams = teams.size
-        val numRounds = numTeams - 1  // Each team plays every other team once
-        val teamList = teams.toMutableList()
+    // Generate round robin schedule using team IDs instead of numeric values
+    private fun generateRoundRobinSchedule(teamIDs: List<String>): List<List<Pair<String, String>>> {
+        val schedule = mutableListOf<List<Pair<String, String>>>()
+        val numTeams = teamIDs.size
+        val numRounds = numTeams - 1
+        val teamList = teamIDs.toMutableList()
 
-        // Add a dummy team if odd number of teams
         if (numTeams % 2 != 0) {
-            teamList.add(0)  // Dummy team with ID 0 to handle odd number of teams
+            teamList.add("BYE")  // Add a dummy team for odd number of teams
         }
 
         for (round in 0 until numRounds) {
-            val weekMatchups = mutableListOf<Pair<Int, Int>>()
-            val teamsUsed = mutableSetOf<Int>()  // Track teams used to avoid double scheduling
+            val weekMatchups = mutableListOf<Pair<String, String>>()
+            val teamsUsed = mutableSetOf<String>()
 
             for (i in 0 until teamList.size / 2) {
                 val team1 = teamList[i]
                 val team2 = teamList[teamList.size - 1 - i]
 
-                // Only schedule valid matchups (ignore dummy team 0 if present)
-                if (team1 != 0 && team2 != 0 && !teamsUsed.contains(team1) && !teamsUsed.contains(team2)) {
+                if (team1 != "BYE" && team2 != "BYE" && !teamsUsed.contains(team1) && !teamsUsed.contains(team2)) {
                     weekMatchups.add(Pair(team1, team2))
                     teamsUsed.add(team1)
                     teamsUsed.add(team2)
@@ -189,9 +234,7 @@ class CreateLeagueFragment : Fragment() {
             }
 
             schedule.add(weekMatchups)
-
-            // Rotate teams for next round while keeping the first team fixed
-            teamList.add(1, teamList.removeAt(teamList.size - 1))
+            teamList.add(1, teamList.removeAt(teamList.size - 1))  // Rotate teams for the next round
         }
 
         return schedule

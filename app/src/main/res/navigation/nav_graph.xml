@@ -30,6 +30,9 @@
         <action
             android:id="@+id/action_homeFragment_to_playerSearchFragment"
             app:destination="@id/playerSearchFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_createLeagueFragment"
+            app:destination="@id/createLeagueFragment" />
     </fragment>
 
 
@@ -60,6 +63,7 @@
         android:name="com.example.fantasy_basketball.CreateLeagueFragment"
         android:label="Create League" />
     <action
-        android:id="@+id/action_homeFragment_to_createLeagueFragment"
-        app:destination="@id/createLeagueFragment" />
+        android:id="@+id/action_createLeagueFragment_to_homeFragment"
+        app:destination="@id/homeFragment" />
+
 </navigation>
