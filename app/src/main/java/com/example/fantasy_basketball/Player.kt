@@ -15,3 +15,14 @@ data class Player(
 //        IR
 //    }
 }
+
+data class PlayerProjection(
+    val playerID: String,
+    val longName: String,
+    val points: String,
+    val rebounds: String,
+    val assists: String,
+    val steals: String,
+    val blocks: String,
+    val fantasyPoints: String
+)

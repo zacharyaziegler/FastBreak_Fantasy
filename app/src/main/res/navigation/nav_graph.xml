@@ -51,6 +51,11 @@
         android:name="com.example.fantasy_basketball.PlayerStatsFragment"
         android:label="Player Stats" />
 
+    <fragment
+        android:id="@+id/playerProjectionsFragment"
+        android:name="com.example.fantasy_basketball.PlayerProjectionsFragment"
+        android:label="Player Stats" />
+
     <action
         android:id="@+id/action_signupFragment_to_loginFragment"
         app:destination="@id/loginFragment" />

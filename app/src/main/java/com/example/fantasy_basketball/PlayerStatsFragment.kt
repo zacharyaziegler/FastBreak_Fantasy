@@ -36,9 +36,9 @@ class PlayerStatsFragment : Fragment() {
         db = FirebaseFirestore.getInstance()
     }
 
-    private var isLoading = false  // Prevent multiple API calls at once
-    private var lastVisibleDocument: DocumentSnapshot? = null  // Track the last document fetched
-    private val pageSize = 20  // Number of players to load per request
+    private var isLoading = false
+    private var lastVisibleDocument: DocumentSnapshot? = null
+    private val pageSize = 20
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,10 +61,10 @@ class PlayerStatsFragment : Fragment() {
                 val totalItemCount = layoutManager.itemCount
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
-                if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                    && firstVisibleItemPosition >= 0
-                    && totalItemCount >= pageSize) {
+                //Log.d("ScrollListener", "visibleItemCount: $visibleItemCount, firstVisibleItemPosition: $firstVisibleItemPosition, totalItemCount: $totalItemCount")
 
+                if (!isLoading && layoutManager.findLastVisibleItemPosition() == totalItemCount - 1) {
+                    Log.d("ScrollListener", "End reached, loading more players")
                     fetchPlayerIDsWithPagination()
                 }
             }
@@ -97,6 +97,8 @@ class PlayerStatsFragment : Fragment() {
 
             lastVisibleDocument = result.documents[result.size() - 1]  // Save the last document
 
+            Log.d("Firestore", "Last visible document: ${lastVisibleDocument?.id}")
+
             for (document in result) {
                 val playerID = document.id
                 CoroutineScope(Dispatchers.IO).launch {
@@ -110,7 +112,6 @@ class PlayerStatsFragment : Fragment() {
             isLoading = false
         }
     }
-
 
     class PlayerAdapter(private val playerList: List<Player>) :
         RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
@@ -156,7 +157,6 @@ class PlayerStatsFragment : Fragment() {
         }
     }
 
-
     private suspend fun getPlayerDataFromAPI(playerID: String) {
         val client = OkHttpClient()
 
@@ -179,7 +179,6 @@ class PlayerStatsFragment : Fragment() {
                         Log.d("API Response", it)
 
                         val jsonObject = JSONObject(it)
-
 
                         if (jsonObject.has("body")) {
                             val bodyObject = jsonObject.getJSONObject("body")
@@ -204,7 +203,6 @@ class PlayerStatsFragment : Fragment() {
                             Log.e("API Error", "No 'player' object in response for playerID: $playerID")
                         }
 
-
                     }
                 }
             }
@@ -213,9 +211,5 @@ class PlayerStatsFragment : Fragment() {
             Log.e("API Error", "Failed to fetch player data for playerID: $playerID")
         }
     }
-
-
-
-
-
 }
+
