@@ -6,6 +6,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +25,7 @@ class PlayerProjectionsFragment : Fragment() {
 
     private lateinit var playerAdapter: PlayerAdapter
     private val playerList = mutableListOf<PlayerProjection>()
+    private val fullPlayerList = mutableListOf<PlayerProjection>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +43,22 @@ class PlayerProjectionsFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         playerAdapter = PlayerAdapter(playerList)
         recyclerView.adapter = playerAdapter
+
+        val playerNameInput: EditText = view.findViewById(R.id.playerNameInput)
+        val searchButton: Button = view.findViewById(R.id.searchButton)
+        val resetButton: Button = view.findViewById(R.id.resetButton)
+
+        searchButton.setOnClickListener {
+            val query = playerNameInput.text.toString().trim()
+            if (query.isNotEmpty()) {
+                filterPlayers(query)
+            }
+        }
+
+        resetButton.setOnClickListener {
+            resetPlayerList()
+        }
+
 
         viewLifecycleOwner.lifecycleScope.launch {
             fetchProjectionsFromAPI()
@@ -131,6 +150,7 @@ class PlayerProjectionsFragment : Fragment() {
 
                                     withContext(Dispatchers.Main) {
                                         playerList.add(playerProjection)
+                                        fullPlayerList.add(playerProjection)
                                         playerAdapter.notifyItemInserted(playerList.size - 1)
                                     }
                                 }
@@ -146,5 +166,22 @@ class PlayerProjectionsFragment : Fragment() {
             }
         }
 
+    private fun filterPlayers(query: String) {
+        val filteredList = fullPlayerList.filter { player ->
+            player.longName.contains(query, ignoreCase = true)
+        }
+        playerList.clear()
+        playerList.addAll(filteredList)
+        playerAdapter.notifyDataSetChanged()
     }
+
+
+
+    private fun resetPlayerList() {
+        playerList.clear()
+        playerList.addAll(fullPlayerList)
+        playerAdapter.notifyDataSetChanged()
+    }
+
+}
 
