@@ -6,7 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +24,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 
 class PlayerStatsFragment : Fragment() {
@@ -28,6 +32,14 @@ class PlayerStatsFragment : Fragment() {
     private lateinit var db: FirebaseFirestore
     private lateinit var recyclerView: RecyclerView
     private lateinit var playerAdapter: PlayerAdapter
+
+    private lateinit var playerNameInput: EditText
+    private lateinit var searchButton: Button
+    private lateinit var resetButton: Button
+
+
+    private var isSearching = false
+
 
     private val playerList = mutableListOf<Player>()
 
@@ -38,7 +50,7 @@ class PlayerStatsFragment : Fragment() {
 
     private var isLoading = false
     private var lastVisibleDocument: DocumentSnapshot? = null
-    private val pageSize = 20
+    private val pageSize = 10
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +63,26 @@ class PlayerStatsFragment : Fragment() {
 
         playerAdapter = PlayerAdapter(playerList)
         recyclerView.adapter = playerAdapter
+
+        searchButton = view.findViewById(R.id.searchButton)
+        resetButton = view.findViewById(R.id.resetButton)
+        playerNameInput = view.findViewById(R.id.playerNameInput)
+
+
+        searchButton.setOnClickListener {
+            val playerName = playerNameInput.text.toString().trim()
+            if (playerName.isNotEmpty()) {
+                isSearching = true
+                fetchPlayerStatsByName(playerName)
+            } else {
+                Toast.makeText(requireContext(), "Please enter a player name", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        resetButton.setOnClickListener {
+            resetPlayerList()
+        }
+
 
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -76,15 +108,13 @@ class PlayerStatsFragment : Fragment() {
     }
 
     private fun fetchPlayerIDsWithPagination() {
-        if (isLoading) return  // Avoid making duplicate calls
+        if (isLoading || isSearching) return
 
         isLoading = true
 
         val query = if (lastVisibleDocument == null) {
-            // Initial load
             db.collection("players").limit(pageSize.toLong())
         } else {
-            // Load next set of data
             db.collection("players").startAfter(lastVisibleDocument!!).limit(pageSize.toLong())
         }
 
@@ -95,7 +125,7 @@ class PlayerStatsFragment : Fragment() {
                 return@addOnSuccessListener
             }
 
-            lastVisibleDocument = result.documents[result.size() - 1]  // Save the last document
+            lastVisibleDocument = result.documents[result.size() - 1]
 
             Log.d("Firestore", "Last visible document: ${lastVisibleDocument?.id}")
 
@@ -112,6 +142,9 @@ class PlayerStatsFragment : Fragment() {
             isLoading = false
         }
     }
+
+
+
 
     class PlayerAdapter(private val playerList: List<Player>) :
         RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
@@ -211,5 +244,82 @@ class PlayerStatsFragment : Fragment() {
             Log.e("API Error", "Failed to fetch player data for playerID: $playerID")
         }
     }
+
+    private fun fetchPlayerStatsByName(playerName: String) {
+        val client = OkHttpClient()
+
+        val url = "https://tank01-fantasy-stats.p.rapidapi.com/getNBAPlayerInfo?playerName=$playerName&statsToGet=averages"
+
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .addHeader("x-rapidapi-key", "a0ac93dc3amsh37d315dd4ab6990p119d93jsn2d0bf27cf642")
+            .addHeader("x-rapidapi-host", "tank01-fantasy-stats.p.rapidapi.com")
+            .build()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                    val responseBody = response.body?.string()
+                    responseBody?.let {
+                        val jsonObject = JSONObject(it)
+
+                        if (jsonObject.has("body")) {
+                            val bodyArray = jsonObject.getJSONArray("body")
+
+                            withContext(Dispatchers.Main) {
+                                playerList.clear()
+                            }
+
+                            for (i in 0 until bodyArray.length()) {
+                                val playerObject = bodyArray.getJSONObject(i)
+
+                                val id = playerObject.getString("playerID")
+                                val longName = playerObject.getString("longName")
+                                val statsObject = playerObject.optJSONObject("stats") ?: JSONObject()
+
+                                val points = statsObject.optString("pts", null)
+                                val rebounds = statsObject.optString("reb", null)
+                                val assists = statsObject.optString("ast", null)
+
+
+                                if (points != null && rebounds != null && assists != null) {
+                                    val player = Player(id, longName, points, rebounds, assists)
+                                    playerList.add(player)
+                                }
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                playerAdapter.notifyDataSetChanged()
+                            }
+
+                        } else {
+                            Log.e("API Error", "No 'body' object found in response for name: $playerName")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("API Error", "Failed to fetch player data for playerName: $playerName")
+            }
+        }
+    }
+
+
+    private fun resetPlayerList() {
+        playerNameInput.text.clear()
+        playerList.clear()
+        isSearching = false
+        lastVisibleDocument = null
+        fetchPlayerIDsWithPagination()
+        playerAdapter.notifyDataSetChanged()
+    }
+
+
+
+
+
 }
 
