@@ -1,10 +1,16 @@
 package com.example.fantasy_basketball
 
+import PlayerDataManager
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.fantasy_basketball.R
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,6 +19,14 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // Create an instance of PlayerDataManager
+//        val playerDataManager = PlayerDataManager()
+
+        // Launch a coroutine to fetch and store the players
+//        CoroutineScope(Dispatchers.IO).launch {
+//            println("Entered Coroutine")
+//            playerDataManager.fetchAndStorePlayers()
+//        }
 
         // Initialize FirebaseAuth
         auth = FirebaseAuth.getInstance()

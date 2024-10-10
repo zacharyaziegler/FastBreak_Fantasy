@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="top"
+    android:layout_gravity="center"
+    android:background="?android:attr/windowBackground">
+
+    <!-- League Name Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LEAGUE NAME"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/leagueNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter league name" />
+
+    <!-- League Size Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LEAGUE SIZE"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Horizontal ScrollView for Radio Buttons -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:id="@+id/leagueSizeRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- League Size Buttons (4-20 Even Numbers) -->
+            <RadioButton android:id="@+id/size4" android:text="4" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size6" android:text="6" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size8" android:text="8" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size10" android:text="10" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size12" android:text="12" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size14" android:text="14" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size16" android:text="16" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size18" android:text="18" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <RadioButton android:id="@+id/size20" android:text="20" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <!-- Scoring Type Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SCORING TYPE"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Active Scoring Type (Head to Head Points) -->
+    <RadioButton
+        android:id="@+id/scoringTypeHeadToHeadPoints"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Head to Head Points"
+        android:textSize="14sp"
+        android:checked="true" />
+
+    <!-- Disabled/Coming Soon Scoring Types -->
+    <RadioButton
+        android:id="@+id/scoringTypeComingSoon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="More scoring types available soon"
+        android:textSize="14sp"
+        android:enabled="false"
+        android:textColor="?android:attr/textColorSecondary" />
+
+    <!-- Create League Button -->
+    <Button
+        android:id="@+id/finalizeLeagueBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Create League"
+        android:textStyle="bold" />
+</LinearLayout>
