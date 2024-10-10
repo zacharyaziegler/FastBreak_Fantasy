@@ -54,18 +54,16 @@ class MainActivity : AppCompatActivity() {
 
         navController.navigate(R.id.playerProjectionsFragment)
 
-
-
-        /*
-
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
             // If the user is signed in, navigate to the home fragment
             bottomNavigation.visibility = View.VISIBLE
             navController.navigate(R.id.homeFragment)
+
         } else {
             // If not signed in, stay on the login fragment
             bottomNavigation.visibility = View.GONE
+
             navController.navigate(R.id.loginFragment)
         }
 
@@ -80,6 +78,14 @@ class MainActivity : AppCompatActivity() {
                 R.id.ic_setting -> {
                     // Change this to navigate to the settings fragment when create
                     navController.navigate(R.id.signupFragment)
+                    true
+                }
+                R.id.ic_Search -> {
+                    navController.navigate(R.id.playerStatsFragment)
+                    true
+                }
+                R.id.ic_proj -> {
+                    navController.navigate(R.id.playerProjectionsFragment)
                     true
                 }
                 else -> false
@@ -100,5 +106,5 @@ class MainActivity : AppCompatActivity() {
 
 
 }
-         */
+
 
