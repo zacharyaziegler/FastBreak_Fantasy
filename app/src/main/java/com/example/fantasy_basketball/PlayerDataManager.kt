@@ -3,7 +3,7 @@ import com.example.fantasy_basketball.PlayerAPIService
 import com.google.firebase.firestore.FirebaseFirestore
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
+/*
 class PlayerDataManager {
 
     private val db = FirebaseFirestore.getInstance()
@@ -63,3 +63,6 @@ class PlayerDataManager {
     }
 }
 
+
+
+ */

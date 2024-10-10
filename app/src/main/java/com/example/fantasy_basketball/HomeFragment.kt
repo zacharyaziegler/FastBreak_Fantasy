@@ -43,9 +43,15 @@ class HomeFragment : Fragment() {
 
         // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
+
+        //displayPlayerStats("leBron james")
+        //fetchAndPrintAllPlayers()
+
+        // Configure Google Sign-In
         firestore = FirebaseFirestore.getInstance()
 
         // Initialize Google Sign-In Client
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
