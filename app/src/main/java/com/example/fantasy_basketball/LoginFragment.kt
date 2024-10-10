@@ -2,6 +2,7 @@ package com.example.fantasy_basketball
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -43,6 +44,8 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Log.d("LoginFragment", "onViewCreated: Fragment created and Firebase initialized")
+
         // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
@@ -58,6 +61,12 @@ class LoginFragment : Fragment() {
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
+        // Revoke any lingering session when opening the login screen
+        googleSignInClient.revokeAccess().addOnCompleteListener {
+            googleSignInClient.signOut().addOnCompleteListener {
+                Log.d("LoginFragment", "Google session terminated successfully.")
+            }
+        }
 
         // Handle Google Sign-In button click
         view.findViewById<ImageButton>(R.id.googleSignInButton).setOnClickListener {
@@ -83,20 +92,25 @@ class LoginFragment : Fragment() {
         val email = emailEditText.text.toString().trim()
         val password = passwordEditText.text.toString().trim()
 
+        Log.d("LoginFragment", "Attempting login with email: $email")
+
         // Validate email and password
         if (email.isEmpty()) {
+            Log.w("LoginFragment", "Email is empty")
             emailEditText.error = "Email is required"
             emailEditText.requestFocus()
             return
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Log.w("LoginFragment", "Invalid email format: $email")
             emailEditText.error = "Please enter a valid email"
             emailEditText.requestFocus()
             return
         }
 
         if (password.isEmpty()) {
+            Log.w("LoginFragment", "Password is empty")
             passwordEditText.error = "Password is required"
             passwordEditText.requestFocus()
             return
@@ -106,17 +120,18 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
+                    Log.d("LoginFragment", "Email/password login successful for user: ${auth.currentUser?.uid}")
                     val user = auth.currentUser
                     if (user?.isEmailVerified == true) {
-                        // Email is verified, proceed to HomeFragment
+                        Log.d("LoginFragment", "User email verified")
                         Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
                         findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                     } else {
-                        // Email not verified
+                        Log.w("LoginFragment", "User email not verified")
                         Toast.makeText(requireContext(), "You MUST verify your email in order to login.", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    // Login failed
+                    Log.e("LoginFragment", "Login failed: ${task.exception?.message}")
                     Toast.makeText(requireContext(), "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -136,9 +151,10 @@ class LoginFragment : Fragment() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
+                Log.d("LoginFragment", "Google sign-in success, attempting Firebase auth")
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                e.printStackTrace()
+                Log.e("LoginFragment", "Google sign-in failed: ${e.message}")
                 Toast.makeText(requireContext(), "Google sign-in failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -146,17 +162,20 @@ class LoginFragment : Fragment() {
 
     // Authenticate with Firebase using the Google ID token
     private fun firebaseAuthWithGoogle(idToken: String) {
+        Log.d("LoginFragment", "firebaseAuthWithGoogle: Authenticating with Firebase using Google token")
+
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
+                    Log.d("LoginFragment", "Google sign-in successful, user: ${auth.currentUser?.uid}")
                     val user = auth.currentUser
                     if (user != null) {
-                        // Check if user exists in Firestore and add if not
                         checkAndAddUserToFirestore(user)
                     }
                     findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                 } else {
+                    Log.e("LoginFragment", "Google sign-in failed: ${task.exception?.message}")
                     Toast.makeText(requireContext(), "Google sign-in failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -169,7 +188,7 @@ class LoginFragment : Fragment() {
         // Check if user exists in Firestore
         userRef.get().addOnSuccessListener { document ->
             if (!document.exists()) {
-                // If user doesn't exist, add them to Firestore
+                Log.d("LoginFragment", "Adding user to Firestore")
                 val newUser = hashMapOf(
                     "email" to user.email,
                     "leagues" to emptyList<String>(),  // Initialize as empty
@@ -177,15 +196,19 @@ class LoginFragment : Fragment() {
                 )
                 userRef.set(newUser)
                     .addOnSuccessListener {
+                        Log.d("LoginFragment", "User added to Firestore")
                         Toast.makeText(requireContext(), "User added to Firestore", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { e ->
+                        Log.e("LoginFragment", "Error adding user to Firestore: ${e.message}")
                         Toast.makeText(requireContext(), "Error adding user to Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
+                Log.d("LoginFragment", "User already exists in Firestore")
                 Toast.makeText(requireContext(), "User already exists in Firestore", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
+            Log.e("LoginFragment", "Error checking user in Firestore: ${e.message}")
             Toast.makeText(requireContext(), "Error checking user in Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -197,6 +220,7 @@ class LoginFragment : Fragment() {
             if (googleApiAvailability.isUserResolvableError(resultCode)) {
                 googleApiAvailability.getErrorDialog(requireActivity(), resultCode, 9000)?.show()
             } else {
+                Log.e("LoginFragment", "Google Play Services not supported on this device")
                 Toast.makeText(requireContext(), "This device is not supported.", Toast.LENGTH_LONG).show()
             }
             return false
