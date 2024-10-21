@@ -108,7 +108,8 @@ class CreateLeagueFragment : Fragment() {
                 "points" to 0,
                 "leagueID" to leagueID,
                 "wins" to 0,
-                "losses" to 0
+                "losses" to 0,
+                "profilePictureUrl" to ""
             )
 
             teamsCollection.document(teamID).set(teamData)

@@ -1,3 +1,5 @@
+package com.example.fantasy_basketball
+
 import com.example.fantasy_basketball.Player
 import com.example.fantasy_basketball.PlayerAPIService
 import com.google.firebase.firestore.FirebaseFirestore

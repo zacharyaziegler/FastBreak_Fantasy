@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.ic_setting -> {
                     // Change this to navigate to the settings fragment when create
-                    navController.navigate(R.id.signupFragment)
+                    navController.navigate(R.id.settingsFragment)
                     true
                 }
                 R.id.ic_Search -> {
