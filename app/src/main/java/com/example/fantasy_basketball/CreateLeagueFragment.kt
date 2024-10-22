@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -21,6 +22,7 @@ class CreateLeagueFragment : Fragment() {
     private lateinit var leagueNameEditText: EditText
     private lateinit var leagueSizeRadioGroup: RadioGroup
     private lateinit var finalizeLeagueBtn: Button
+    private lateinit var progressBar: ProgressBar
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
 
@@ -38,6 +40,7 @@ class CreateLeagueFragment : Fragment() {
         leagueNameEditText = view.findViewById(R.id.leagueNameEditText)
         leagueSizeRadioGroup = view.findViewById(R.id.leagueSizeRadioGroup)
         finalizeLeagueBtn = view.findViewById(R.id.finalizeLeagueBtn)
+        progressBar = view.findViewById(R.id.progressBar)
 
         // Handle "Create League" button click
         finalizeLeagueBtn.setOnClickListener {
@@ -54,6 +57,9 @@ class CreateLeagueFragment : Fragment() {
             } else if (selectedSizeId == -1) {
                 Toast.makeText(requireContext(), "Please select a league size", Toast.LENGTH_SHORT).show()
             } else {
+                // Show progress bar and start creation
+                progressBar.visibility = View.VISIBLE
+                progressBar.progress = 10 // Initial progress
                 createLeague(leagueName, leagueSize)
             }
         }
@@ -66,10 +72,12 @@ class CreateLeagueFragment : Fragment() {
         val commissionerID = auth.currentUser?.uid ?: return
 
         // League Document Data
+        val inviteCode = generateInviteCode()  // Create 6-letter invite code
         val leagueData = hashMapOf(
             "leagueName" to leagueName,
             "commissionerID" to commissionerID,
             "members" to arrayListOf(commissionerID),  // Commissioner starts as the only member
+            "inviteCode" to inviteCode,  // Store invite code in the league document
             "settings" to hashMapOf(
                 "scoringType" to "Head to Head Points",
                 "leagueSize" to leagueSize
@@ -81,14 +89,22 @@ class CreateLeagueFragment : Fragment() {
         val leagueRef = firestore.collection("Leagues").document()
         leagueRef.set(leagueData)
             .addOnSuccessListener {
+                progressBar.progress = 30 // Update progress
                 // Create Teams and Matchups Subcollections
                 createTeamsSubcollection(leagueRef.id, leagueSize, commissionerID)
 
-                // After the league is successfully created and teams are assigned,
-                // navigate back to the home screen
-                findNavController().navigate(R.id.action_createLeagueFragment_to_homeFragment)
+                // Navigate to InviteFriendsFragment after creation
+                val bundle = Bundle().apply {
+                    putString("leagueId", leagueRef.id)
+                    putString("inviteCode", inviteCode)
+                    putString("leagueName", leagueName)
+                }
+
+                Toast.makeText(requireContext(), "League creation complete!", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_createLeagueFragment_to_inviteFriendsFragment, bundle)
             }
             .addOnFailureListener { e ->
+                progressBar.visibility = View.GONE
                 Toast.makeText(requireContext(), "Failed to create league: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
@@ -97,7 +113,7 @@ class CreateLeagueFragment : Fragment() {
     private fun createTeamsSubcollection(leagueID: String, leagueSize: Int, commissionerID: String) {
         val teamsCollection = firestore.collection("Leagues").document(leagueID).collection("Teams")
         val teamIDList = mutableListOf<String>()
-        var teamsCreated = 0  // Track the number of teams created
+        var teamsCreated = 0
 
         for (i in 1..leagueSize) {
             val teamID = UUID.randomUUID().toString()
@@ -114,52 +130,21 @@ class CreateLeagueFragment : Fragment() {
 
             teamsCollection.document(teamID).set(teamData)
                 .addOnSuccessListener {
-                    teamIDList.add(teamID)  // Add teamID to the list
+                    teamIDList.add(teamID)
                     teamsCreated++
+                    progressBar.progress = (30 + (teamsCreated.toFloat() / leagueSize * 30)).toInt()
 
-                    // Once all teams are created, assign commissioner and generate matchups
+                    // Once all teams are created, generate matchups
                     if (teamsCreated == leagueSize) {
-                        // After all teams are created, assign the commissioner to Team 1
                         assignCommissionerToTeam(leagueID, commissionerID, teamIDList[0])
-
-                        // Generate matchups after commissioner is assigned
                         createMatchupsSubcollection(leagueID, teamIDList)
                     }
                 }
-                .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Failed to create team: ${e.message}", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Failed to create team: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
         }
     }
-
-
-    // Function to assign the commissioner to Team 1 and update the User's leagues and teams
-    private fun assignCommissionerToTeam(leagueID: String, commissionerID: String, teamID: String) {
-        val userRef = firestore.collection("users").document(commissionerID)
-
-        // Check if the user document exists
-        userRef.get().addOnSuccessListener { userDocument ->
-            if (userDocument.exists()) {
-                val userLeagues = userDocument.get("leagues") as? MutableList<String> ?: mutableListOf()
-                val userTeams = userDocument.get("teams") as? MutableList<String> ?: mutableListOf()
-
-                // Add the leagueID and teamID to the User's fields using arrayUnion
-                userRef.update(
-                    "leagues", com.google.firebase.firestore.FieldValue.arrayUnion(leagueID),
-                    "teams", com.google.firebase.firestore.FieldValue.arrayUnion(teamID)
-                ).addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Commissioner assigned to Team 1", Toast.LENGTH_SHORT).show()
-                }.addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Failed to update commissioner data: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(requireContext(), "User document does not exist", Toast.LENGTH_SHORT).show()
-            }
-        }.addOnFailureListener { e ->
-            Toast.makeText(requireContext(), "Error fetching user data: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
 
 
     // Create Matchups Subcollection in Firestore with 19 weeks of scheduling
@@ -167,39 +152,36 @@ class CreateLeagueFragment : Fragment() {
         val matchupsCollection = firestore.collection("Leagues").document(leagueID).collection("Matchups")
 
         val roundRobinSchedule = generateRoundRobinSchedule(teamIDList)
-
         val totalWeeks = 19
         val numUniqueWeeks = roundRobinSchedule.size
 
-        // Extra weeks to fill until week 19 (reshuffle existing matchups)
-        val extraMatchups = mutableListOf<List<Pair<String, String>>>()
-        roundRobinSchedule.forEach { extraMatchups.add(it) }
-
+        // Create matchups for all weeks
         for (week in 1..totalWeeks) {
             val matchups = if (week <= numUniqueWeeks) {
                 roundRobinSchedule[week - 1]
             } else {
-                extraMatchups[(week - numUniqueWeeks - 1) % extraMatchups.size]
+                roundRobinSchedule[(week - numUniqueWeeks - 1) % numUniqueWeeks]
             }
 
             createMatchupsForWeek(matchupsCollection, week, matchups)
         }
+
+        progressBar.progress = 100  // Set progress to 100% once matchups are created
+        Toast.makeText(requireContext(), "League and matchups created!", Toast.LENGTH_SHORT).show()
     }
 
-    // Helper to create matchups for a given week
     private fun createMatchupsForWeek(
         matchupsCollection: CollectionReference,
         week: Int,
         matchups: List<Pair<String, String>>
     ) {
         val weekStr = String.format("week%02d", week)
-
         for (matchup in matchups) {
             val matchupID = "${weekStr}_${matchup.first}_${matchup.second}"
             val matchupData = hashMapOf(
                 "week" to weekStr,
-                "team1ID" to matchup.first,  // Use actual teamID
-                "team2ID" to matchup.second,  // Use actual teamID
+                "team1ID" to matchup.first,
+                "team2ID" to matchup.second,
                 "team1Score" to 0,
                 "team2Score" to 0,
                 "result" to "pending"
@@ -208,7 +190,7 @@ class CreateLeagueFragment : Fragment() {
         }
     }
 
-    // Generate round robin schedule using team IDs instead of numeric values
+    // Generate round-robin schedule using team IDs
     private fun generateRoundRobinSchedule(teamIDs: List<String>): List<List<Pair<String, String>>> {
         val schedule = mutableListOf<List<Pair<String, String>>>()
         val numTeams = teamIDs.size
@@ -239,5 +221,27 @@ class CreateLeagueFragment : Fragment() {
         }
 
         return schedule
+    }
+
+    // Generate a 6-letter invite code
+    private fun generateInviteCode(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        return (1..6)
+            .map { chars.random() }
+            .joinToString("")
+    }
+
+    // Assign commissioner to team and update user data
+    private fun assignCommissionerToTeam(leagueID: String, commissionerID: String, teamID: String) {
+        val userRef = firestore.collection("users").document(commissionerID)
+
+        userRef.get().addOnSuccessListener { userDocument ->
+            if (userDocument.exists()) {
+                userRef.update(
+                    "leagues", com.google.firebase.firestore.FieldValue.arrayUnion(leagueID),
+                    "teams", com.google.firebase.firestore.FieldValue.arrayUnion(teamID)
+                )
+            }
+        }
     }
 }

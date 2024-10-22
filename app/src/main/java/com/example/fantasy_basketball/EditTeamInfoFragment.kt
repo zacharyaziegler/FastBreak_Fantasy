@@ -22,15 +22,20 @@ class EditTeamInfoFragment : Fragment() {
     private lateinit var leagueId: String
     private lateinit var teamId: String
 
+    private var currentTeamName: String = ""
+    private var currentProfilePictureUrl: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         firestore = FirebaseFirestore.getInstance()
 
-        // Retrieve leagueId and teamId passed from the previous fragment
+        // Retrieve leagueId, teamId, teamName, and profilePictureUrl passed from TeamInfoFragment
         arguments?.let {
             leagueId = it.getString("leagueId", "")
             teamId = it.getString("teamId", "")
+            currentTeamName = it.getString("teamName", "")  // Get the current team name
+            currentProfilePictureUrl = it.getString("profilePictureUrl", "")  // Get the current profile pic URL
         }
     }
 
@@ -44,6 +49,10 @@ class EditTeamInfoFragment : Fragment() {
         teamNameEditText = view.findViewById(R.id.teamNameEditText)
         profilePicUrlEditText = view.findViewById(R.id.profilePicUrlEditText)
         saveTeamButton = view.findViewById(R.id.saveTeamButton)
+
+        // Prepopulate the EditTexts with the current data
+        teamNameEditText.setText(currentTeamName)
+        profilePicUrlEditText.setText(currentProfilePictureUrl)
 
         // Set button click listener to save team info
         saveTeamButton.setOnClickListener {

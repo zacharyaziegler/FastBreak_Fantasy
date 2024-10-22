@@ -22,6 +22,9 @@ class TeamInfoFragment : Fragment() {
     private lateinit var teamNameTextView: TextView
     private lateinit var editTeamButton: Button
 
+    private var currentTeamName: String = ""
+    private var currentProfilePictureUrl: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,6 +56,8 @@ class TeamInfoFragment : Fragment() {
             val bundle = Bundle().apply {
                 putString("leagueId", leagueId)
                 putString("teamId", teamId)
+                putString("teamName", currentTeamName)  // Pass current team name
+                putString("profilePictureUrl", currentProfilePictureUrl)  // Pass current profile picture URL
             }
             findNavController().navigate(R.id.action_teamInfoFragment_to_editTeamInfoFragment, bundle)
         }
@@ -65,14 +70,14 @@ class TeamInfoFragment : Fragment() {
             .document(teamId).get()
             .addOnSuccessListener { teamDoc ->
                 if (teamDoc.exists()) {
-                    val teamName = teamDoc.getString("teamName") ?: "Unknown Team"
-                    val profilePictureUrl = teamDoc.getString("profilePictureUrl") ?: ""
+                    currentTeamName = teamDoc.getString("teamName") ?: "Unknown Team"
+                    currentProfilePictureUrl = teamDoc.getString("profilePictureUrl") ?: ""
 
-                    teamNameTextView.text = teamName
+                    teamNameTextView.text = currentTeamName
 
                     // Load profile picture using Glide (or any other image loading library)
-                    if (profilePictureUrl.isNotEmpty()) {
-                        Glide.with(this).load(profilePictureUrl).override(500, 500).into(teamImageView)
+                    if (currentProfilePictureUrl.isNotEmpty()) {
+                        Glide.with(this).load(currentProfilePictureUrl).override(500, 500).into(teamImageView)
                     } else {
                         teamImageView.setImageResource(R.drawable.team_placeholder_image)  // Placeholder image if no URL
                     }

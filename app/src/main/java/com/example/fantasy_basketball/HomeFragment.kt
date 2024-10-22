@@ -74,6 +74,11 @@ class HomeFragment : Fragment() {
         view.findViewById<Button>(R.id.createLeagueBtn).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_createLeagueFragment)
         }
+
+        // Join a League button functionality
+        view.findViewById<Button>(R.id.joinLeagueBtn).setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_joinLeagueFragment)
+        }
     }
 
     private fun fetchUserMatchups() {

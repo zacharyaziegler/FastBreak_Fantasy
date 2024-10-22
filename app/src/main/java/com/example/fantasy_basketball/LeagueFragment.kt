@@ -1,15 +1,16 @@
 package com.example.fantasy_basketball
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.fantasy_basketball.R
 
 class LeagueFragment : Fragment() {
 
@@ -52,7 +53,38 @@ class LeagueFragment : Fragment() {
         // Load the league and team data
         loadLeagueAndTeamData()
 
+        // Initialize the toolbar and setup hamburger menu
+        val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
+        toolbar.setNavigationIcon(R.drawable.ic_hamburger_menu)
+        toolbar.setNavigationOnClickListener {
+            showPopupMenu(it)
+        }
+
         return view
+    }
+
+    private fun showPopupMenu(view: View) {
+        // Create a PopupMenu and inflate the menu layout
+        val popupMenu = PopupMenu(requireContext(), view)
+        popupMenu.menuInflater.inflate(R.menu.league_menu, popupMenu.menu)
+
+        // Handle menu item clicks
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_league_info -> {
+                    // Navigate to League Info fragment (add this fragment if not already done)
+//                    findNavController().navigate(R.id.action_leagueFragment_to_leagueInfoFragment)
+                    true
+                }
+                R.id.action_invite_friends -> {
+                    // Navigate to Invite Friends fragment (implement this feature)
+//                    findNavController().navigate(R.id.action_leagueFragment_to_inviteFriendsFragment)
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
     }
 
     private fun loadLeagueAndTeamData() {

@@ -105,9 +105,12 @@ dependencies {
     // Firebase Firestore
     implementation ("com.google.firebase:firebase-firestore-ktx:24.6.0")
 
-
+    // Glide (url image processing)
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     kapt ("com.github.bumptech.glide:compiler:4.15.1")
+
+    // Firebase dynamic links
+    implementation ("com.google.firebase:firebase-dynamic-links:21.1.0")
 
 
 

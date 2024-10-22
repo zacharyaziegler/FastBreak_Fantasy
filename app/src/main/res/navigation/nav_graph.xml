@@ -36,6 +36,9 @@
         <action
             android:id="@+id/action_homeFragment_to_leagueFragment"
             app:destination="@id/leagueFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_joinLeagueFragment"
+            app:destination="@id/joinLeagueFragment" />
     </fragment>
 
 
@@ -78,6 +81,25 @@
     <action
         android:id="@+id/action_createLeagueFragment_to_homeFragment"
         app:destination="@id/homeFragment" />
+    <action
+        android:id="@+id/action_createLeagueFragment_to_inviteFriendsFragment"
+        app:destination="@id/inviteFriendsFragment" />
+
+    <!-- InviteFriendsFragment -->
+    <fragment
+        android:id="@+id/inviteFriendsFragment"
+        android:name="com.example.fantasy_basketball.InviteFriendsFragment"
+        android:label="Invite Friends" />
+
+    <!-- JoinLeagueFragment -->
+    <fragment
+        android:id="@+id/joinLeagueFragment"
+        android:name="com.example.fantasy_basketball.JoinLeagueFragment"
+        android:label="Join League" />
+    <action
+        android:id="@+id/action_joinLeagueFragment_to_homeFragment"
+        app:destination="@id/inviteFriendsFragment" />
+
 
     <!-- SettingsFragment -->
     <fragment
