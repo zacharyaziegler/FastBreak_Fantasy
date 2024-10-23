@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    id ("kotlin-parcelize")
+    id ("kotlin-android")
+
 }
 
 android {
@@ -99,6 +102,11 @@ dependencies {
 
     // Firebase Firestore
     implementation ("com.google.firebase:firebase-firestore-ktx:24.6.0")
+
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+
+
 
 
 

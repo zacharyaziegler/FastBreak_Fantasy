@@ -44,21 +44,23 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
 
-        navController.navigate(R.id.playerProjectionsFragment)
+       navController.navigate(R.id.playerListFragment)
 
 
+/*
 
-        /*
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
             // If the user is signed in, navigate to the home fragment
             navController.navigate(R.id.homeFragment)
         } else {
             // If not signed in, stay on the login fragment
-            navController.navigate(R.id.loginFragment)
+            navController.navigate(R.id.homeFragment)
         }
 
-         */
+ */
+
+
 
 
 
