@@ -1,6 +1,7 @@
 package com.example.fantasy_basketball
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageButton
 import android.widget.PopupMenu
@@ -47,6 +48,7 @@ class LeagueFragment : Fragment() {
         // Initialize the teamInfoButton and set its click listener
         val teamInfoButton: ImageButton = view.findViewById(R.id.teamInfoButton)
         teamInfoButton.setOnClickListener {
+            Log.d("LeagueFragment", "Pressed")
             navigateToTeamInfoFragment()
         }
 

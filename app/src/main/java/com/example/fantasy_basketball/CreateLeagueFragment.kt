@@ -49,7 +49,6 @@ class CreateLeagueFragment : Fragment() {
             // Get selected league size
             val selectedSizeId = leagueSizeRadioGroup.checkedRadioButtonId
             val selectedSizeText = view.findViewById<RadioButton>(selectedSizeId)?.text.toString()
-            val leagueSize = selectedSizeText.toInt()
 
             // Validate inputs
             if (leagueName.isEmpty()) {
@@ -58,6 +57,7 @@ class CreateLeagueFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please select a league size", Toast.LENGTH_SHORT).show()
             } else {
                 // Show progress bar and start creation
+                val leagueSize = selectedSizeText.toInt()
                 progressBar.visibility = View.VISIBLE
                 progressBar.progress = 10 // Initial progress
                 createLeague(leagueName, leagueSize)
