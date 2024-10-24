@@ -1,28 +1,68 @@
 package com.example.fantasy_basketball
 
+import com.google.gson.annotations.SerializedName
 
 data class Player(
-    val playerID: String,
-    val longName: String,
-    val points: String,
-    val rebounds: String,
-    val assists: String
-) {
-    // Enum class defined within Player to represent player status
-//    enum class Status {
-//        H,
-//        Q,
-//        IR
-//    }
-}
+    val playerID: String = "",                    // Unique identifier for the player
+    val longName: String = "",                    // Full name of the player
+    val jerseyNum: String = "",                   // Player's jersey number
+    val pos: String = "",                         // Position of the player
+    val team: String = "",                        // Team abbreviation
+    val teamID: String = "",                      // Team ID
+    val nbaComHeadshot: String = "",              // URL for the NBA.com headshot
+    @SerializedName("injury")                     // Ensure this matches the Firestore field exactly
+    val injury: Injury? = null,                   // Nullable injury details
+    @SerializedName("totalStats")                 // Ensure this matches the Firestore field exactly
+    val stats: PlayerStats? = null,               // Nullable player statistics
+    @SerializedName("projections")                // Ensure this matches the Firestore field exactly
+    val projection: PlayerProjection? = null      // Nullable player projection
+)
+
+
+// Update to match the stats provided in the response
+data class PlayerStats(
+    val blk: String? = null,                      // Blocks per game
+    val fga: String? = null,                      // Field Goals Attempted
+    val DefReb: String? = null,                   // Defensive Rebounds
+    val ast: String? = null,                      // Assists
+    val ftp: String? = null,                      // Free Throw Percentage
+    val tptfgp: String? = null,                   // Three Point Field Goal Percentage
+    val tptfgm: String? = null,                   // Three Point Field Goals Made
+    val stl: String? = null,                      // Steals
+    val fgm: String? = null,                      // Field Goals Made
+    val pts: String? = null,                      // Points per game
+    val reb: String? = null,                      // Rebounds per game
+    val fgp: String? = null,                      // Field Goal Percentage
+    val fta: String? = null,                      // Free Throws Attempted
+    val mins: String? = null,                     // Minutes played
+    val trueShootingAttempts: String? = null,     // True Shooting Attempts
+    val gamesPlayed: String? = null,              // Number of games played
+    val TOV: String? = null,                      // Turnovers
+    val tptfga: String? = null,                   // Three Point Field Goals Attempted
+    val OffReb: String? = null,                   // Offensive Rebounds
+    val ftm: String? = null                        // Free Throws Made
+)
 
 data class PlayerProjection(
-    val playerID: String,
-    val longName: String,
-    val points: String,
-    val rebounds: String,
-    val assists: String,
-    val steals: String,
-    val blocks: String,
-    val fantasyPoints: String
+    val blk: String = "",
+    val mins: String = "",
+    val ast: String = "",
+    val pos: String = "",
+    val teamID: String = "",
+    val stl: String = "",
+    val TOV: String = "",
+    val team: String = "",
+    val pts: String = "",
+    val reb: String = "",
+    val longName: String = "",      // Add longName to the projection
+    val playerID: String = "",      // Add playerID to the projection
+    val fantasyPoints: String = ""   // Add fantasyPoints to the projection
+)
+
+// Update to match the injury details provided in the response
+data class Injury(
+    val injReturnDate: String? = null,           // Return date from injury
+    val description: String? = null,              // Injury description
+    val injDate: String? = null,                  // Injury date
+    val designation: String? = null                // Injury designation (e.g., Day-To-Day)
 )

@@ -1,6 +1,7 @@
 package com.example.fantasy_basketball
 
 //import PlayerDataManager
+import PlayerDataManager
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
@@ -11,6 +12,11 @@ import android.util.Log
 import androidx.navigation.findNavController
 
 import androidx.navigation.fragment.NavHostFragment
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +25,7 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,16 +35,20 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        scheduleWeeklyPlayerProjectionsWorker()
+
 
 
         // Create an instance of PlayerDataManager
-        //val playerDataManager = PlayerDataManager()
+        val playerDataManager = PlayerDataManager()
 
         // Launch a coroutine to fetch and store the players
-//        CoroutineScope(Dispatchers.IO).launch {
-//            println("Entered Coroutine")
-//            playerDataManager.fetchAndStorePlayers()
-//        }
+        CoroutineScope(Dispatchers.IO).launch {
+           println("Entered Coroutine")
+
+           // playerDataManager.fetchAndStorePlayersFromTeam()
+        //    playerDataManager.fetchAndStorePlayerProjections()
+      }
 
         // Initialize FirebaseAuth
 
@@ -52,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
 
-        navController.navigate(R.id.playerProjectionsFragment)
+        //navController.navigate(R.id.playerProjectionsFragment)
 
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
@@ -81,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.ic_Search -> {
-                    navController.navigate(R.id.playerStatsFragment)
+                    navController.navigate(R.id.playerSearchFragment)
                     true
                 }
                 R.id.ic_proj -> {
@@ -103,6 +114,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun scheduleWeeklyPlayerProjectionsWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
+            .build()
+
+        // Create a periodic work request with constraints
+        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
+            5, TimeUnit.MINUTES
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "PlayerProjectionsWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            playerProjectionsWorkRequest
+        )
+    }
+
 
 
 }

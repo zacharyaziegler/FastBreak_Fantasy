@@ -29,7 +29,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class PlayerStatsFragment : Fragment() {
 
-    private lateinit var db: FirebaseFirestore
+    /*private lateinit var db: FirebaseFirestore
     private lateinit var recyclerView: RecyclerView
     private lateinit var playerAdapter: PlayerAdapter
 
@@ -165,9 +165,9 @@ class PlayerStatsFragment : Fragment() {
         override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
             val player = playerList[position]
             holder.playerName.text = player.longName
-            holder.playerPoints.text = "Points: ${player.points}"
-            holder.playerRebounds.text = "Rebounds: ${player.rebounds}"
-            holder.playerAssists.text = "Assists: ${player.assists}"
+            holder.playerPoints.text = "Points: ${player.playerStats.pts}"
+            holder.playerRebounds.text = "Rebounds: ${player.playerStats.reb}"
+            holder.playerAssists.text = "Assists: ${player.playerStats.ast}"
         }
 
         override fun getItemCount() = playerList.size
@@ -224,8 +224,8 @@ class PlayerStatsFragment : Fragment() {
                             val rebounds = statsObject.getString("reb")
                             val assists = statsObject.getString("ast")
 
-                            val player = Player(id, longName, points, rebounds, assists)
-
+                            //val player = Player(id, longName, points, rebounds, assists)
+                            val player = Player(id, longName,"0","G", "GUS","1","sdd", playerStats, playerProjection )//points, rebounds, assists)
                             withContext(Dispatchers.Main) {
                                 playerList.add(player)
                                 Log.d("Player List", "Player list size: ${playerList.size}")
@@ -320,6 +320,6 @@ class PlayerStatsFragment : Fragment() {
 
 
 
-
+*/
 }
 
