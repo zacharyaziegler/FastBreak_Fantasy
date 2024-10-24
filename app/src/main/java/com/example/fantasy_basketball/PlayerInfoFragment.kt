@@ -1,8 +1,6 @@
 package com.example.fantasy_basketball
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firestore.v1.StructuredQuery.Projection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,15 +21,7 @@ import org.json.JSONObject
 
 class PlayerInfoFragment : Fragment() {
 
-   // private lateinit var playerName: TextView
-   // private lateinit var playerPtsProj: TextView
-   // private lateinit var playerRebProj: TextView
-   // private lateinit var playerAstProj: TextView
-    //private lateinit var playerFantasyPointsProj: TextView
-   // private lateinit var backButton: Button
-
-
-    private val playerProjections = mutableListOf<PlayerDisplay>()
+    private lateinit var player: Player
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,7 +29,7 @@ class PlayerInfoFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_player_info, container, false)
 
-
+        // Initialize views
         val playerName = view.findViewById<TextView>(R.id.playerName)
         val playerTeam = view.findViewById<TextView>(R.id.playerTeam)
         val playerPosition = view.findViewById<TextView>(R.id.playerPosition)
@@ -54,7 +44,7 @@ class PlayerInfoFragment : Fragment() {
         val playerStatus = view.findViewById<TextView>(R.id.injStatus)
         val playerDesc = view.findViewById<TextView>(R.id.injDesc)
 
-
+        // Initialize projection views
         val playerPointsProj = view.findViewById<TextView>(R.id.playerPtsProj)
         val playerReboundsProj = view.findViewById<TextView>(R.id.playerRebProj)
         val playerAssistsProj = view.findViewById<TextView>(R.id.playerAstProj)
@@ -63,100 +53,103 @@ class PlayerInfoFragment : Fragment() {
         val playerTurnoversProj = view.findViewById<TextView>(R.id.playerTovProj)
         val playerFantasyPointsProj = view.findViewById<TextView>(R.id.playerFantasyPointsProj)
 
+        // Retrieve the Player object from arguments
+        player = arguments?.getParcelable("selectedPlayer") ?: return view
 
-        val playerID = arguments?.getString("playerID")
-        val longName = arguments?.getString("longName")
-        val team = arguments?.getString("team")
-        val position = arguments?.getString("position")
-        val points = arguments?.getString("points")
-        val rebounds = arguments?.getString("rebounds")
-        val assists = arguments?.getString("assists")
-        val steals = arguments?.getString("steals")
-        val blocks = arguments?.getString("blocks")
-        val turnovers = arguments?.getString("turnovers")
-        val headshotUrl = arguments?.getString("headshotUrl")
-        val injStatus = arguments?.getString("injuryStatus")
-        val injDesc = arguments?.getString("injuryDescription")
-        val pointsProj = arguments?.getString("pointsProj")
-        val reboundsProj = arguments?.getString("reboundsProj")
-        val assistsProj = arguments?.getString("assistsProj")
-        val stealsProj = arguments?.getString("stealsProj")
-        val blocksProj = arguments?.getString("blocksProj")
-        val turnoversProj = arguments?.getString("turnoversProj")
-        val fantasyPointsProj = arguments?.getString("fantasyPointsProj")
+        // Populate views with player data
+        populatePlayerInfo(view, player, playerName, playerTeam, playerPosition, playerPoints,
+            playerRebounds, playerAssists, playerSteals, playerBlocks, playerTurnovers,
+            playerStatus, playerDesc, playerImage)
+
+        // Display projections from Player object
+        displayProjections(player.projection, playerPointsProj, playerReboundsProj,
+            playerAssistsProj, playerStealsProj, playerBlocksProj,
+            playerTurnoversProj, playerFantasyPointsProj)
+
+        // Fetch and display projections
+        /*fetchPlayerProjections(player.playerID) { projections ->
+            displayProjections(projections, playerPointsProj, playerReboundsProj,
+                playerAssistsProj, playerStealsProj, playerBlocksProj,
+                playerTurnoversProj, playerFantasyPointsProj)
+        }*/
 
 
-        playerName.text = longName
-        playerTeam.text = "Team: ${team ?: "N/A"}"
-        playerPosition.text = "Position: ${position ?: "N/A"}"
-        playerPoints.text = points ?: "N/A"
-        playerRebounds.text = rebounds ?: "N/A"
-        playerAssists.text = assists ?: "N/A"
-        playerSteals.text = steals ?: "N/A"
-        playerBlocks.text = blocks ?: "N/A"
-        playerTurnovers.text = turnovers ?: "N/A"
-        playerStatus.text = injStatus ?: "N/A"
-        playerDesc.text = injDesc ?: "N/A"
-        playerPointsProj.text = pointsProj ?:"N/A"
-        playerReboundsProj.text = reboundsProj ?:"N/A"
-        playerAssistsProj.text = assistsProj ?:"N/A"
-        playerStealsProj.text = stealsProj ?:"N/A"
-        playerBlocksProj.text = blocksProj ?:"N/A"
-        playerTurnoversProj.text = turnoversProj ?:"N/A"
-        playerFantasyPointsProj.text = fantasyPointsProj ?:"N/A"
-
-
-
-
-
-        if (!headshotUrl.isNullOrEmpty()) {
-            Glide.with(this).load(headshotUrl).into(playerImage)
-        } else {
-            playerImage.setImageResource(R.drawable.player)
-        }
-
-
+        // Back button listener
         backButton.setOnClickListener {
             findNavController().popBackStack()
         }
 
-/*
-        playerID?.let { id ->
-            fetchPlayerProjectionsFromAPI { projections ->
-
-                val playerProjection = projections?.optJSONObject(id)
-
-
-                playerProjection?.let { projection ->
-                    playerPointsProj.text = projection.optString("pts", "N/A")
-                    playerReboundsProj.text = projection.optString("reb", "N/A")
-                    playerAssistsProj.text = projection.optString("ast", "N/A")
-                    playerFantasyPointsProj.text = projection.optString("fantasyPoints", "N/A")
-
-
-                    playerStealsProj.text = projection.optString("stl", "N/A")
-                    playerBlocksProj.text = projection.optString("blk", "N/A")
-                    playerTurnoversProj.text = projection.optString("TOV", "N/A")
-                } ?: run {
-
-                    playerPointsProj.text = "N/A"
-                    playerReboundsProj.text = "N/A"
-                    playerAssistsProj.text = "N/A"
-                    playerFantasyPointsProj.text = "N/A"
-                    playerStealsProj.text = "N/A"
-                    playerBlocksProj.text = "N/A"
-                    playerTurnoversProj.text = "N/A"
-                }
-            }
-        }
-
- */
-
         return view
     }
 
+    private fun populatePlayerInfo(
+        view: View,
+        player: Player,
+        playerName: TextView,
+        playerTeam: TextView,
+        playerPosition: TextView,
+        playerPoints: TextView,
+        playerRebounds: TextView,
+        playerAssists: TextView,
+        playerSteals: TextView,
+        playerBlocks: TextView,
+        playerTurnovers: TextView,
+        playerStatus: TextView,
+        playerDesc: TextView,
+        playerImage: ImageView
+    ) {
+        playerName.text = player.longName
+        playerTeam.text = "Team: ${player.team ?: "N/A"}"
+        playerPosition.text = "Position: ${player.pos ?: "N/A"}"
+        playerPoints.text = player.stats?.pts ?: "N/A"
+        playerRebounds.text = player.stats?.reb ?: "N/A"
+        playerAssists.text = player.stats?.ast ?: "N/A"
+        playerSteals.text = player.stats?.stl ?: "N/A"
+        playerBlocks.text = player.stats?.blk ?: "N/A"
+        playerTurnovers.text = player.stats?.TOV ?: "N/A"
+        playerStatus.text = player.injury?.designation ?: "N/A"
+        playerDesc.text = player.injury?.description ?: "N/A"
 
-    private fun fetchPlayerProjectionsFromAPI(onProjectionsFetched: (JSONObject?) -> Unit) {
+
+        if (!player.nbaComHeadshot.isNullOrEmpty()) {
+            Glide.with(this).load(player.nbaComHeadshot).into(playerImage)
+        } else {
+            playerImage.setImageResource(R.drawable.player)
+        }
+
+    }
+
+    private fun displayProjections(
+        projection: PlayerProjection?,
+        playerPointsProj: TextView,
+        playerReboundsProj: TextView,
+        playerAssistsProj: TextView,
+        playerStealsProj: TextView,
+        playerBlocksProj: TextView,
+        playerTurnoversProj: TextView,
+        playerFantasyPointsProj: TextView
+    ) {
+        if (projection != null) {
+            playerPointsProj.text = projection.pts
+            playerReboundsProj.text = projection.reb
+            playerAssistsProj.text = projection.ast
+            playerStealsProj.text = projection.stl
+            playerBlocksProj.text = projection.blk
+            playerTurnoversProj.text = projection.TOV
+            playerFantasyPointsProj.text = projection.fantasyPoints
+        } else {
+            // Display N/A if the projection data is not available
+            playerPointsProj.text = "N/A"
+            playerReboundsProj.text = "N/A"
+            playerAssistsProj.text = "N/A"
+            playerStealsProj.text = "N/A"
+            playerBlocksProj.text = "N/A"
+            playerTurnoversProj.text = "N/A"
+            playerFantasyPointsProj.text = "N/A"
+        }
+    }
+
+    private fun fetchPlayerProjections(playerID: String, onProjectionsFetched: (JSONObject?) -> Unit) {
         val client = OkHttpClient()
         val url = "https://tank01-fantasy-stats.p.rapidapi.com/getNBAProjections?numOfDays=7&pts=1&reb=1.25&ast=1.5&stl=3&blk=3&TOV=-1"
 
@@ -176,8 +169,7 @@ class PlayerInfoFragment : Fragment() {
                         val playerProjections = jsonObject.getJSONObject("body").getJSONObject("playerProjections")
 
                         withContext(Dispatchers.Main) {
-
-                            onProjectionsFetched(playerProjections)
+                            onProjectionsFetched(playerProjections.optJSONObject(playerID))
                         }
                     }
                 }
@@ -186,5 +178,24 @@ class PlayerInfoFragment : Fragment() {
             }
         }
     }
-}
 
+    private fun displayProjections(
+        projections: JSONObject?,
+        playerPointsProj: TextView,
+        playerReboundsProj: TextView,
+        playerAssistsProj: TextView,
+        playerStealsProj: TextView,
+        playerBlocksProj: TextView,
+        playerTurnoversProj: TextView,
+        playerFantasyPointsProj: TextView
+    ) {
+        playerPointsProj.text = projections?.optString("pts")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerReboundsProj.text = projections?.optString("reb")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerAssistsProj.text = projections?.optString("ast")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerStealsProj.text = projections?.optString("stl")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerBlocksProj.text = projections?.optString("blk")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerTurnoversProj.text = projections?.optString("TOV")?.takeIf { it.isNotEmpty() } ?: "--"
+        playerFantasyPointsProj.text = projections?.optString("fantasyPoints")?.takeIf { it.isNotEmpty() } ?: "--"
+    }
+
+}

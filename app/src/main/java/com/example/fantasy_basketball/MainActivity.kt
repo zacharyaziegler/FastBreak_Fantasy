@@ -1,7 +1,6 @@
 package com.example.fantasy_basketball
 
-//import PlayerDataManager
-import PlayerDataManager
+
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity() {
            println("Entered Coroutine")
 
            // playerDataManager.fetchAndStorePlayersFromTeam()
-        //    playerDataManager.fetchAndStorePlayerProjections()
+            playerDataManager.fetchAndStorePlayerProjections()
       }
 
         // Initialize FirebaseAuth
@@ -101,9 +100,6 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
-
-
-
 
 
 
@@ -120,16 +116,14 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             // If not signed in, stay on the login fragment
-
-            navController.navigate(R.id.loginFragment)
-        }
-
- 
-
             bottomNavigation.visibility = View.GONE
-
             navController.navigate(R.id.loginFragment)
         }
+
+            //
+
+           // navController.navigate(R.id.loginFragment)
+
 
         // Set the item selection listener for the BottomNavigationView
         bottomNavigation.setOnItemSelectedListener { menuItem ->
@@ -149,12 +143,13 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.ic_proj -> {
-                    navController.navigate(R.id.playerProjectionsFragment)
+                    navController.navigate(R.id.playerListFragment)
                     true
                 }
                 else -> false
             }
         }
+
 
         // Add an authentication state listener to handle sign-in/sign-out events
         auth.addAuthStateListener { firebaseAuth ->

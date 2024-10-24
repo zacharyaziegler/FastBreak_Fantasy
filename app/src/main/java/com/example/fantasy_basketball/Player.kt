@@ -8,6 +8,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 
+@Parcelize
 data class Player(
     val playerID: String = "",                    // Unique identifier for the player
     val longName: String = "",                    // Full name of the player
@@ -16,16 +17,17 @@ data class Player(
     val team: String = "",                        // Team abbreviation
     val teamID: String = "",                      // Team ID
     val nbaComHeadshot: String = "",              // URL for the NBA.com headshot
-    @SerializedName("injury")                     // Ensure this matches the Firestore field exactly
+    @SerializedName("Injury")                     // Ensure this matches the Firestore field exactly
     val injury: Injury? = null,                   // Nullable injury details
-    @SerializedName("totalStats")                 // Ensure this matches the Firestore field exactly
+    @SerializedName("TotalStats")                 // Ensure this matches the Firestore field exactly
     val stats: PlayerStats? = null,               // Nullable player statistics
-    @SerializedName("projections")                // Ensure this matches the Firestore field exactly
+    @SerializedName("Projections")                // Ensure this matches the Firestore field exactly
     val projection: PlayerProjection? = null      // Nullable player projection
-)
+): Parcelable
 
 
 // Update to match the stats provided in the response
+@Parcelize
 data class PlayerStats(
     val blk: String? = null,                      // Blocks per game
     val fga: String? = null,                      // Field Goals Attempted
@@ -47,8 +49,8 @@ data class PlayerStats(
     val tptfga: String? = null,                   // Three Point Field Goals Attempted
     val OffReb: String? = null,                   // Offensive Rebounds
     val ftm: String? = null                        // Free Throws Made
-)
-
+): Parcelable
+@Parcelize
 data class PlayerProjection(
     val blk: String = "",
     val mins: String = "",
@@ -63,15 +65,16 @@ data class PlayerProjection(
     val longName: String = "",      // Add longName to the projection
     val playerID: String = "",      // Add playerID to the projection
     val fantasyPoints: String = ""   // Add fantasyPoints to the projection
-)
+): Parcelable
 
 // Update to match the injury details provided in the response
+@Parcelize
 data class Injury(
     val injReturnDate: String? = null,           // Return date from injury
     val description: String? = null,              // Injury description
     val injDate: String? = null,                  // Injury date
     val designation: String? = null                // Injury designation (e.g., Day-To-Day)
-)
+): Parcelable
 
 
 data class PlayerDisplay(
