@@ -91,11 +91,11 @@ class PlayerProjectionsFragment : Fragment() {
         override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
             val player = playerList[position]
             holder.playerName.text = player.longName
-            holder.playerPoints.text = "Points: ${player.points}"
-            holder.playerRebounds.text = "Rebounds: ${player.rebounds}"
-            holder.playerAssists.text = "Assists: ${player.assists}"
-            holder.playerSteals.text = "Steals: ${player.steals}"
-            holder.playerBlocks.text = "Blocks: ${player.blocks}"
+            holder.playerPoints.text = "Points: ${player.pts}"
+            holder.playerRebounds.text = "Rebounds: ${player.reb}"
+            holder.playerAssists.text = "Assists: ${player.ast}"
+            holder.playerSteals.text = "Steals: ${player.stl}"
+            holder.playerBlocks.text = "Blocks: ${player.blk}"
             holder.playerProjection.text = "Fantasy Points: ${player.fantasyPoints}"
         }
 
@@ -140,11 +140,16 @@ class PlayerProjectionsFragment : Fragment() {
                                     val playerProjection = PlayerProjection(
                                         playerID = playerID,
                                         longName = playerObject.getString("longName"),
-                                        points = playerObject.getString("pts"),
-                                        rebounds = playerObject.getString("reb"),
-                                        assists = playerObject.getString("ast"),
-                                        steals = playerObject.getString("stl"),
-                                        blocks = playerObject.getString("blk"),
+                                        pts = playerObject.getString("pts"),
+                                        reb = playerObject.getString("reb"),
+                                        ast = playerObject.getString("ast"),
+                                        stl = playerObject.getString("stl"),
+                                        blk = playerObject.getString("blk"),
+                                        mins = "0",
+                                        TOV = "",
+                                        team = "0",
+                                        pos = "2",
+                                        teamID = "1",
                                         fantasyPoints = playerObject.getString("fantasyPoints")
                                     )
 

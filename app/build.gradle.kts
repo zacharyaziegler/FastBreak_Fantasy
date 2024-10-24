@@ -56,9 +56,7 @@ android {
         }
     }
 }
-
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -75,9 +73,6 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
-
-
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.work.runtime.ktx)
@@ -89,25 +84,21 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(kotlin("script-runtime"))
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.0") // Navigation Components
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.0")
-    implementation(platform("com.google.firebase:firebase-bom:33.3.0")) // Firebase BoM
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth-ktx") // Firebase auth dependency
-
-    implementation ("com.google.android.gms:play-services-auth:20.5.0")
-    implementation ("com.google.android.material:material:1.1.0")
-    
-    implementation("com.google.android.gms:play-services-auth:20.5.0")
-
-    // Retrofit for API requests
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.6.0") // Firebase Firestore
 
     // Kotlin Coroutines for asynchronous API calls
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1")
+
+
+    // Navigation Components
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.0")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.0")
 
     // Firebase Firestore
     implementation ("com.google.firebase:firebase-firestore-ktx:24.6.0")
@@ -127,5 +118,13 @@ dependencies {
     implementation ("com.google.firebase:firebase-dynamic-links:21.1.0")
 
 
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    // Google Play Services for authentication
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation("com.google.android.material:material:1.1.0")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
 }
