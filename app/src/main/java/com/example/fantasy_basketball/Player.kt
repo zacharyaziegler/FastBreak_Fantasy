@@ -1,6 +1,12 @@
 package com.example.fantasy_basketball
 
+
 import com.google.gson.annotations.SerializedName
+import android.annotation.SuppressLint
+import android.os.Parcel
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 
 data class Player(
     val playerID: String = "",                    // Unique identifier for the player
@@ -66,3 +72,45 @@ data class Injury(
     val injDate: String? = null,                  // Injury date
     val designation: String? = null                // Injury designation (e.g., Day-To-Day)
 )
+
+
+data class PlayerDisplay(
+    val playerID: String = "",
+    val longName: String = "",
+    val headshotUrl: String? = null,
+    val team: String? = null,
+    val position: String? = null,
+    val points: String? = null,
+    val rebounds: String? = null,
+    val assists: String? = null,
+    val steals: String? = null,
+    val blocks: String? = null,
+    val turnovers: String? = null,
+    val injStatus: String? = null,
+    val injDesc: String? = null,
+    val fantasyPointsProj: String? = null,
+    val pointsProj: String? = null,
+    val reboundsProj: String? = null,
+    val assistsProj: String? = null,
+    val stealsProj: String? = null,
+    val blocksProj: String? = null,
+    val turnoversProj: String? = null,
+
+)
+
+data class PlayerFirestore(
+    val playerID: String ,
+    val longName: String ,
+    val headshotUrl: String? = null ,
+    val team: String? = null,
+    val position: String? = null,
+    val overallADP: String? = null,
+    val posADP: String? = null,
+    val fantasyPointsProj: String? = null,
+    val pointsProj: String? = null,
+    val reboundsProj: String? = null,
+    val assistsProj: String? = null,
+    val stealsProj: String? = null,
+    val blocksProj: String? = null
+)
+

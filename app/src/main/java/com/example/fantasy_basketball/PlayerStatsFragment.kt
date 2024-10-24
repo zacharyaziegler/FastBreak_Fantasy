@@ -29,7 +29,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class PlayerStatsFragment : Fragment() {
 
-    /*private lateinit var db: FirebaseFirestore
+    private lateinit var db: FirebaseFirestore
     private lateinit var recyclerView: RecyclerView
     private lateinit var playerAdapter: PlayerAdapter
 
@@ -169,6 +169,8 @@ class PlayerStatsFragment : Fragment() {
             holder.playerRebounds.text = "Rebounds: ${player.playerStats.reb}"
             holder.playerAssists.text = "Assists: ${player.playerStats.ast}"
         }
+
+
 
         override fun getItemCount() = playerList.size
     }
@@ -320,6 +322,7 @@ class PlayerStatsFragment : Fragment() {
 
 
 
-*/
+
+
 }
 

@@ -1,5 +1,4 @@
 package com.example.fantasy_basketball
-
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View

@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+
+    id ("kotlin-parcelize")
+    id ("kotlin-android")
+
+    id ("kotlin-kapt")
+
 }
 
 android {
@@ -68,6 +74,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.work.runtime.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -87,9 +95,28 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1")
 
+
     // Navigation Components
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.0")
+
+    // Firebase Firestore
+    implementation ("com.google.firebase:firebase-firestore-ktx:24.6.0")
+
+
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+
+
+
+
+    // Glide (url image processing)
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    kapt ("com.github.bumptech.glide:compiler:4.15.1")
+
+    // Firebase dynamic links
+    implementation ("com.google.firebase:firebase-dynamic-links:21.1.0")
+
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.8.1")

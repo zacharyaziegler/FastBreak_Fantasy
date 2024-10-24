@@ -43,25 +43,25 @@ class HomeFragment : Fragment() {
 
         // Initialize Firebase Auth and Firestore
         auth = FirebaseAuth.getInstance()
-
-        //displayPlayerStats("leBron james")
-        //fetchAndPrintAllPlayers()
-
-        // Configure Google Sign-In
         firestore = FirebaseFirestore.getInstance()
 
-        // Initialize Google Sign-In Client
-
+        // Configure Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
 
         // Initialize ViewPager2 and adapter
         viewPager = view.findViewById(R.id.viewPager)
-        matchupAdapter = MatchupAdapter(matchupsList)
+        matchupAdapter = MatchupAdapter(matchupsList) { leagueId, leagueName ->
+            // Use a Bundle to pass the leagueId and leagueName to the LeagueFragment
+            val bundle = Bundle().apply {
+                putString("leagueId", leagueId)
+                putString("leagueName", leagueName)
+            }
+            findNavController().navigate(R.id.action_homeFragment_to_leagueFragment, bundle)
+        }
         viewPager.adapter = matchupAdapter
 
         // Set "My Teams" title at the top
@@ -70,40 +70,14 @@ class HomeFragment : Fragment() {
         // Fetch and display matchups
         fetchUserMatchups()
 
-        // Logout button functionality
-        view.findViewById<Button>(R.id.logoutButton).setOnClickListener {
-            try {
-                Log.d("HomeFragment", "Logout button clicked")
-
-                // Sign out of Firebase (this works for both Google and regular Firebase Auth)
-                auth.signOut()
-
-                // Check if the user is logged in with Google
-                val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(requireContext())
-                if (googleSignInAccount != null) {
-                    // If the user is signed in with Google, revoke access
-                    googleSignInClient.revokeAccess().addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("HomeFragment", "Google Sign-Out successful")
-                            // After successful sign-out, navigate to the LoginFragment
-                            findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
-                        } else {
-                            Log.e("HomeFragment", "Google Sign-Out failed: ${task.exception?.message}")
-                        }
-                    }
-                } else {
-                    // If the user is not signed in with Google, directly navigate to the LoginFragment
-                    findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
-                }
-
-            } catch (e: Exception) {
-                Log.e("HomeFragment", "Error during logout: ${e.message}")
-            }
-        }
-
         // Create a League button functionality
         view.findViewById<Button>(R.id.createLeagueBtn).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_createLeagueFragment)
+        }
+
+        // Join a League button functionality
+        view.findViewById<Button>(R.id.joinLeagueBtn).setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_joinLeagueFragment)
         }
     }
 
@@ -153,38 +127,45 @@ class HomeFragment : Fragment() {
     }
 
     private fun fetchOpponentDetailsAndAddMatchup(leagueId: String, userTeamId: String, opponentTeamId: String) {
-        // Fetch opponent team details
+        // Fetch opponent team details (including image URL)
         firestore.collection("Leagues").document(leagueId).collection("Teams").document(opponentTeamId)
             .get().addOnSuccessListener { opponentTeamDoc ->
                 if (opponentTeamDoc.exists()) {
                     val opponentTeamName = opponentTeamDoc.getString("teamName") ?: "Unknown"
+                    val opponentTeamImageUrl = opponentTeamDoc.getString("profilePictureUrl") ?: ""
 
-                    // Fetch league name and display matchup
+                    // Fetch league name and user's team details
                     firestore.collection("Leagues").document(leagueId).get()
                         .addOnSuccessListener { leagueDoc ->
                             if (leagueDoc.exists()) {
                                 val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
-                                addMatchupToViewPager(userTeamId, opponentTeamName, leagueName, leagueId)
+
+                                // Fetch user's team name and image
+                                firestore.collection("Leagues").document(leagueId).collection("Teams")
+                                    .document(userTeamId).get()
+                                    .addOnSuccessListener { userTeamDoc ->
+                                        if (userTeamDoc.exists()) {
+                                            val userTeamName = userTeamDoc.getString("teamName") ?: "My Team"
+                                            val userTeamImageUrl = userTeamDoc.getString("profilePictureUrl") ?: ""
+
+                                            // Add the matchup to the list with image URLs and update the adapter
+                                            val matchupData = MatchupData(
+                                                userTeamName,
+                                                opponentTeamName,
+                                                leagueName,
+                                                leagueId,
+                                                userTeamImageUrl,
+                                                opponentTeamImageUrl
+                                            )
+                                            matchupsList.add(matchupData)
+                                            matchupAdapter.notifyDataSetChanged()
+
+                                            // Optionally, update UI with league name
+                                            view?.findViewById<TextView>(R.id.leagueName)?.text = leagueName
+                                        }
+                                    }
                             }
                         }
-                }
-            }
-    }
-
-    private fun addMatchupToViewPager(userTeamId: String, opponentTeamName: String, leagueName: String, leagueId: String) {
-        // Fetch user's team name
-        firestore.collection("Leagues").document(leagueId).collection("Teams").document(userTeamId)
-            .get().addOnSuccessListener { userTeamDoc ->
-                if (userTeamDoc.exists()) {
-                    val userTeamName = userTeamDoc.getString("teamName") ?: "My Team"
-
-                    // Add the matchup to the list and update adapter
-                    val matchupData = MatchupData(userTeamName, opponentTeamName, leagueName)
-                    matchupsList.add(matchupData)
-                    matchupAdapter.notifyDataSetChanged()
-
-                    // Set the league name in the lower section
-                    view?.findViewById<TextView>(R.id.leagueName)?.text = leagueName
                 }
             }
     }
