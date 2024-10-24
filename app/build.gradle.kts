@@ -76,6 +76,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.firebase.messaging.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -126,5 +127,6 @@ dependencies {
     implementation("com.google.android.material:material:1.1.0")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+   // implementation("com.eowise:recyclerview-stickyheaders:0.4.3")
 
 }
