@@ -2,8 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+
     id ("kotlin-parcelize")
     id ("kotlin-android")
+
+    id ("kotlin-kapt")
 
 }
 
@@ -76,6 +79,8 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.work.runtime.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -90,6 +95,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.3.0")) // Firebase BoM
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth-ktx") // Firebase auth dependency
+
+    implementation ("com.google.android.gms:play-services-auth:20.5.0")
+    implementation ("com.google.android.material:material:1.1.0")
+    
     implementation("com.google.android.gms:play-services-auth:20.5.0")
 
     // Retrofit for API requests
@@ -103,12 +112,19 @@ dependencies {
     // Firebase Firestore
     implementation ("com.google.firebase:firebase-firestore-ktx:24.6.0")
 
+
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
 
 
 
+    // Glide (url image processing)
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    kapt ("com.github.bumptech.glide:compiler:4.15.1")
+
+    // Firebase dynamic links
+    implementation ("com.google.firebase:firebase-dynamic-links:21.1.0")
 
 
 

@@ -33,6 +33,12 @@
         <action
             android:id="@+id/action_homeFragment_to_createLeagueFragment"
             app:destination="@id/createLeagueFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_leagueFragment"
+            app:destination="@id/leagueFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_joinLeagueFragment"
+            app:destination="@id/joinLeagueFragment" />
     </fragment>
 
 
@@ -89,5 +95,80 @@
     <action
         android:id="@+id/action_createLeagueFragment_to_homeFragment"
         app:destination="@id/homeFragment" />
+    <action
+        android:id="@+id/action_createLeagueFragment_to_inviteFriendsFragment"
+        app:destination="@id/inviteFriendsFragment" />
 
+    <!-- InviteFriendsFragment -->
+    <fragment
+        android:id="@+id/inviteFriendsFragment"
+        android:name="com.example.fantasy_basketball.InviteFriendsFragment"
+        android:label="Invite Friends" />
+
+    <!-- JoinLeagueFragment -->
+    <fragment
+        android:id="@+id/joinLeagueFragment"
+        android:name="com.example.fantasy_basketball.JoinLeagueFragment"
+        android:label="Join League" />
+    <action
+        android:id="@+id/action_joinLeagueFragment_to_homeFragment"
+        app:destination="@id/homeFragment" />
+
+
+    <!-- SettingsFragment -->
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.fantasy_basketball.SettingsFragment"
+        android:label="Settings" />
+    <action
+        android:id="@+id/action_settingsFragment_to_changePasswordFragment"
+        app:destination="@id/changePasswordFragment" />
+    <action
+        android:id="@+id/action_settingsFragment_to_loginFragment"
+        app:destination="@id/loginFragment" />
+
+    <!-- ChangePasswordFragment -->
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.fantasy_basketball.ChangePasswordFragment"
+        android:label="Change Password"
+        tools:layout="@layout/fragment_change_password" />
+    <action
+        android:id="@+id/action_changePasswordFragment_to_settingsFragment"
+        app:destination="@id/settingsFragment" />
+
+    <!-- LeagueFragment-->
+    <fragment
+        android:id="@+id/leagueFragment"
+        android:name="com.example.fantasy_basketball.LeagueFragment"
+        android:label="LeagueFragment"
+        tools:layout="@layout/fragment_league" />
+    <action
+        android:id="@+id/action_leagueFragment_to_teamInfoFragment"
+        app:destination="@id/teamInfoFragment" />
+
+    <!-- TeamInfoFragment -->
+    <fragment
+        android:id="@+id/teamInfoFragment"
+        android:name="com.example.fantasy_basketball.TeamInfoFragment"
+        android:label="TeamInfoFragment">
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
+        <argument
+            android:name="teamId"
+            app:argType="string" />
+    </fragment>
+    <action
+        android:id="@+id/action_teamInfoFragment_to_editTeamInfoFragment"
+        app:destination="@id/editTeamInfoFragment" />
+
+    <!-- EditTeamInfoFragment -->
+    <fragment
+        android:id="@+id/editTeamInfoFragment"
+        android:name="com.example.fantasy_basketball.EditTeamInfoFragment"
+        android:label="EditTeamInfoFragment"/>
+    <action
+        android:id="@+id/action_editTeamInfoFragment_to_teamInfoFragment"
+        app:destination="@id/teamInfoFragment" />
 </navigation>

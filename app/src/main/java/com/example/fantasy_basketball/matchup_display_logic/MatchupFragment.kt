@@ -7,12 +7,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.example.fantasy_basketball.R
 
 class MatchupFragment : Fragment() {
 
     private var teamName: String? = null
     private var opponentName: String? = null
+    private var userTeamImageUrl: String? = null
+    private var opponentTeamImageUrl: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,10 +28,22 @@ class MatchupFragment : Fragment() {
         val userTeamImageView: ImageView = view.findViewById(R.id.userTeamImage)
         val opponentTeamImageView: ImageView = view.findViewById(R.id.opponentTeamImage)
 
-        // Set the team names and profile images
+        // Set the team names
         userTeamNameTextView.text = teamName
         opponentTeamNameTextView.text = opponentName
-        // Optionally, set images or fetch based on team data
+
+        // Use Glide to load the team images
+        if (!userTeamImageUrl.isNullOrEmpty()) {
+            Glide.with(this).load(userTeamImageUrl).into(userTeamImageView)
+        } else {
+            userTeamImageView.setImageResource(R.drawable.team_placeholder_image)  // Placeholder image
+        }
+
+        if (!opponentTeamImageUrl.isNullOrEmpty()) {
+            Glide.with(this).load(opponentTeamImageUrl).into(opponentTeamImageView)
+        } else {
+            opponentTeamImageView.setImageResource(R.drawable.team_placeholder_image)  // Placeholder image
+        }
 
         return view
     }
@@ -36,11 +51,13 @@ class MatchupFragment : Fragment() {
     companion object {
         // Create new instance with arguments
         @JvmStatic
-        fun newInstance(teamName: String, opponentName: String): MatchupFragment {
+        fun newInstance(teamName: String, opponentName: String, userTeamImageUrl: String, opponentTeamImageUrl: String): MatchupFragment {
             val fragment = MatchupFragment()
             val args = Bundle()
             args.putString("teamName", teamName)
             args.putString("opponentName", opponentName)
+            args.putString("userTeamImageUrl", userTeamImageUrl)
+            args.putString("opponentTeamImageUrl", opponentTeamImageUrl)
             fragment.arguments = args
             return fragment
         }
@@ -51,6 +68,8 @@ class MatchupFragment : Fragment() {
         arguments?.let {
             teamName = it.getString("teamName")
             opponentName = it.getString("opponentName")
+            userTeamImageUrl = it.getString("userTeamImageUrl")
+            opponentTeamImageUrl = it.getString("opponentTeamImageUrl")
         }
     }
 }
