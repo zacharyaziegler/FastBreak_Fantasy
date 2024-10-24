@@ -170,6 +170,8 @@ class PlayerStatsFragment : Fragment() {
             holder.playerAssists.text = "Assists: ${player.assists}"
         }
 
+
+
         override fun getItemCount() = playerList.size
     }
 
@@ -316,6 +318,7 @@ class PlayerStatsFragment : Fragment() {
         fetchPlayerIDsWithPagination()
         playerAdapter.notifyDataSetChanged()
     }
+
 
 
 

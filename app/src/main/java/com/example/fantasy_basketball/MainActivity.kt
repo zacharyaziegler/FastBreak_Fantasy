@@ -95,6 +95,10 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
 
+
+
+
+
         val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
 
@@ -108,6 +112,12 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             // If not signed in, stay on the login fragment
+
+            navController.navigate(R.id.loginFragment)
+        }
+
+ 
+
             bottomNavigation.visibility = View.GONE
 
             navController.navigate(R.id.loginFragment)
