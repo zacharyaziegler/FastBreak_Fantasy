@@ -24,6 +24,8 @@ class LeagueFragment : Fragment() {
     private lateinit var leagueNameTextView: TextView
     private lateinit var teamNameTextView: TextView
 
+    private var inviteCode: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         firestore = FirebaseFirestore.getInstance()
@@ -74,13 +76,18 @@ class LeagueFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_league_info -> {
-                    // Navigate to League Info fragment (add this fragment if not already done)
+                    // Navigate to League Info fragment
 //                    findNavController().navigate(R.id.action_leagueFragment_to_leagueInfoFragment)
                     true
                 }
                 R.id.action_invite_friends -> {
-                    // Navigate to Invite Friends fragment (implement this feature)
-//                    findNavController().navigate(R.id.action_leagueFragment_to_inviteFriendsFragment)
+                    // Navigate to Invite Friends fragment
+                    val bundle = Bundle().apply {
+                        putString("leagueId", leagueId)
+                        putString("leagueName", leagueNameTextView.text.toString())
+                        putString("inviteCode", inviteCode)
+                    }
+                    findNavController().navigate(R.id.action_leagueFragment_to_inviteFriendsFragment, bundle)
                     true
                 }
                 else -> false
@@ -97,6 +104,9 @@ class LeagueFragment : Fragment() {
             if (leagueDoc.exists()) {
                 val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
                 leagueNameTextView.text = leagueName
+
+                // Retrieve the inviteCode from the league document
+                inviteCode = leagueDoc.getString("inviteCode") ?: ""
 
                 // Fetch the user's team in this league
                 firestore.collection("Leagues").document(leagueId).collection("Teams")

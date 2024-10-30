@@ -84,6 +84,7 @@ class HomeFragment : Fragment() {
     private fun fetchUserMatchups() {
         val userId = auth.currentUser?.uid ?: return
         val userRef = firestore.collection("users").document(userId)
+        val currentWeek = "week01" // TODO: Add logic to track which week
 
         // Fetch user details (leagues and teams)
         userRef.get().addOnSuccessListener { userDocument ->
@@ -94,7 +95,7 @@ class HomeFragment : Fragment() {
                 // Loop through leagues and fetch matchups for each league
                 for ((index, leagueId) in leagues.withIndex()) {
                     val teamId = teams.getOrNull(index) ?: continue
-                    fetchMatchupForTeam(leagueId, teamId)
+                    fetchMatchupForTeam(leagueId, teamId, currentWeek)
                 }
             } else {
                 Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
@@ -102,33 +103,58 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun fetchMatchupForTeam(leagueId: String, teamId: String) {
+    private fun fetchMatchupForTeam(leagueId: String, teamId: String, currentWeek: String) {
         val matchupsCollection = firestore.collection("Leagues").document(leagueId).collection("Matchups")
 
-        // Fetch next pending matchup involving user's team (team1 or team2)
-        matchupsCollection.whereEqualTo("team1ID", teamId).whereEqualTo("result", "pending").limit(1).get()
-            .addOnSuccessListener { matchupsSnapshot ->
-                if (!matchupsSnapshot.isEmpty) {
-                    val matchup = matchupsSnapshot.documents[0]
-                    val opponentTeamId = matchup.getString("team2ID") ?: return@addOnSuccessListener
-                    fetchOpponentDetailsAndAddMatchup(leagueId, teamId, opponentTeamId)
-                } else {
-                    // If no matchups for team1, check if the team is team2
-                    matchupsCollection.whereEqualTo("team2ID", teamId).whereEqualTo("result", "pending").limit(1).get()
-                        .addOnSuccessListener { matchupsSnapshot2 ->
-                            if (!matchupsSnapshot2.isEmpty) {
-                                val matchup = matchupsSnapshot2.documents[0]
-                                val opponentTeamId = matchup.getString("team1ID") ?: return@addOnSuccessListener
+        // Query for matchups where the user's team is either team1ID or team2ID and for the current week
+        matchupsCollection
+            .whereEqualTo("result", "pending")
+            .whereEqualTo("week", currentWeek)  // Filter by the current week
+            .whereIn("team1ID", listOf(teamId))
+            .get()
+            .addOnSuccessListener { team1Snapshot ->
+                val team1Matchups = team1Snapshot.documents
+
+                matchupsCollection
+                    .whereEqualTo("result", "pending")
+                    .whereEqualTo("week", currentWeek)  // Filter by the current week
+                    .whereIn("team2ID", listOf(teamId))
+                    .get()
+                    .addOnSuccessListener { team2Snapshot ->
+                        val team2Matchups = team2Snapshot.documents
+
+                        // Combine matchups for both team1 and team2
+                        val combinedMatchups = team1Matchups + team2Matchups
+
+                        if (combinedMatchups.isNotEmpty()) {
+                            val matchup = combinedMatchups[0]
+                            val team1ID = matchup.getString("team1ID")
+                            val team2ID = matchup.getString("team2ID")
+
+                            // Determine which team is the opponent based on current user's teamID
+                            val opponentTeamId = if (teamId == team1ID) team2ID else team1ID
+
+                            if (opponentTeamId != null) {
                                 fetchOpponentDetailsAndAddMatchup(leagueId, teamId, opponentTeamId)
                             }
+                        } else {
+                            Toast.makeText(requireContext(), "No matchups found for the current week.", Toast.LENGTH_SHORT).show()
                         }
-                }
+                    }
             }
     }
 
-    private fun fetchOpponentDetailsAndAddMatchup(leagueId: String, userTeamId: String, opponentTeamId: String) {
+
+    private fun fetchOpponentDetailsAndAddMatchup(
+        leagueId: String,
+        userTeamId: String,
+        opponentTeamId: String?
+    ) {
+        if (opponentTeamId == null) return
+
         // Fetch opponent team details (including image URL)
-        firestore.collection("Leagues").document(leagueId).collection("Teams").document(opponentTeamId)
+        firestore.collection("Leagues").document(leagueId).collection("Teams")
+            .document(opponentTeamId)
             .get().addOnSuccessListener { opponentTeamDoc ->
                 if (opponentTeamDoc.exists()) {
                     val opponentTeamName = opponentTeamDoc.getString("teamName") ?: "Unknown"
@@ -138,15 +164,19 @@ class HomeFragment : Fragment() {
                     firestore.collection("Leagues").document(leagueId).get()
                         .addOnSuccessListener { leagueDoc ->
                             if (leagueDoc.exists()) {
-                                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+                                val leagueName =
+                                    leagueDoc.getString("leagueName") ?: "Unknown League"
 
                                 // Fetch user's team name and image
-                                firestore.collection("Leagues").document(leagueId).collection("Teams")
+                                firestore.collection("Leagues").document(leagueId)
+                                    .collection("Teams")
                                     .document(userTeamId).get()
                                     .addOnSuccessListener { userTeamDoc ->
                                         if (userTeamDoc.exists()) {
-                                            val userTeamName = userTeamDoc.getString("teamName") ?: "My Team"
-                                            val userTeamImageUrl = userTeamDoc.getString("profilePictureUrl") ?: ""
+                                            val userTeamName =
+                                                userTeamDoc.getString("teamName") ?: "My Team"
+                                            val userTeamImageUrl =
+                                                userTeamDoc.getString("profilePictureUrl") ?: ""
 
                                             // Add the matchup to the list with image URLs and update the adapter
                                             val matchupData = MatchupData(
@@ -159,9 +189,6 @@ class HomeFragment : Fragment() {
                                             )
                                             matchupsList.add(matchupData)
                                             matchupAdapter.notifyDataSetChanged()
-
-                                            // Optionally, update UI with league name
-                                            view?.findViewById<TextView>(R.id.leagueName)?.text = leagueName
                                         }
                                     }
                             }
