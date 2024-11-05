@@ -1,6 +1,7 @@
 package com.example.fantasy_basketball
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +12,11 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
@@ -92,6 +95,7 @@ class CreateLeagueFragment : Fragment() {
                 progressBar.progress = 30 // Update progress
                 // Create Teams and Matchups Subcollections
                 createTeamsSubcollection(leagueRef.id, leagueSize, commissionerID)
+                createMessagesSubcollection(leagueRef.id,commissionerID)
 
                 // Navigate to InviteFriendsFragment after creation
                 val bundle = Bundle().apply {
@@ -108,6 +112,38 @@ class CreateLeagueFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to create league: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+    // Create Messages Subcollection in Firestore
+    private fun createMessagesSubcollection(leagueID: String, commissionerID: String) {
+        val messagesCollection = firestore.collection("Leagues").document(leagueID).collection("messages")
+
+        // List of initial messages
+        val initialMessages = listOf(
+            mapOf(
+                "senderId" to commissionerID,
+                "messageText" to "Welcome to the league chat!",
+                "timestamp" to FieldValue.serverTimestamp(),
+            ),
+            mapOf(
+                "senderId" to "other_user_id",
+                "messageText" to "Let’s have a great season!",
+                "timestamp" to FieldValue.serverTimestamp(),
+            )
+        )
+
+        // Add each message to the messages subcollection
+        for (messageData in initialMessages) {
+            messagesCollection.add(messageData)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Initial message added to league chat", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to add initial message: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+        Toast.makeText(requireContext(), "League and messages created!", Toast.LENGTH_SHORT).show()
+    }
+
+
 
     // Create Teams Subcollection
     private fun createTeamsSubcollection(leagueID: String, leagueSize: Int, commissionerID: String) {
