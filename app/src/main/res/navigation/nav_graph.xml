@@ -141,6 +141,16 @@
         android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
         app:destination="@id/inviteFriendsFragment" />
 
+    <!-- LeagueSettingsFragment-->
+    <fragment
+        android:id="@+id/leagueSettingsFragment"
+        android:name="com.example.fantasy_basketball.LeagueSettingsFragment"
+        android:label="LeagueSettingsFragment"
+        tools:layout="@layout/fragment_league_settings" />
+    <action
+        android:id="@+id/action_leagueFragment_to_leagueSettingsFragment"
+        app:destination="@id/leagueSettingsFragment" />
+
     <!-- TeamInfoFragment -->
     <fragment
         android:id="@+id/teamInfoFragment"

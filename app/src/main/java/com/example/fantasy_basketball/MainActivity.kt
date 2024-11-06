@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        scheduleWeeklyPlayerProjectionsWorker()
+//        scheduleWeeklyPlayerProjectionsWorker()
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -81,16 +81,16 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        // Create an instance of PlayerDataManager
-        val playerDataManager = PlayerDataManager()
-
-        // Launch a coroutine to fetch and store the players
-        CoroutineScope(Dispatchers.IO).launch {
-           println("Entered Coroutine")
-
-           // playerDataManager.fetchAndStorePlayersFromTeam()
-            playerDataManager.fetchAndStorePlayerProjections()
-      }
+////         Create an instance of PlayerDataManager
+//        val playerDataManager = PlayerDataManager()
+//
+////         Launch a coroutine to fetch and store the players
+//        CoroutineScope(Dispatchers.IO).launch {
+//           println("Entered Coroutine")
+//
+//            playerDataManager.fetchAndStorePlayersFromTeam()
+//            playerDataManager.fetchAndStorePlayerProjections()
+//      }
 
         // Initialize FirebaseAuth
 
@@ -164,24 +164,24 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun scheduleWeeklyPlayerProjectionsWorker() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
-            .build()
-
-        // Create a periodic work request with constraints
-        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
-            5, TimeUnit.MINUTES
-        )
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "PlayerProjectionsWork",
-            ExistingPeriodicWorkPolicy.KEEP,
-            playerProjectionsWorkRequest
-        )
-    }
+//    private fun scheduleWeeklyPlayerProjectionsWorker() {
+//        val constraints = Constraints.Builder()
+//            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
+//            .build()
+//
+//        // Create a periodic work request with constraints
+//        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
+//            5, TimeUnit.MINUTES
+//        )
+//            .setConstraints(constraints)
+//            .build()
+//
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//            "PlayerProjectionsWork",
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            playerProjectionsWorkRequest
+//        )
+//    }
 
 
 

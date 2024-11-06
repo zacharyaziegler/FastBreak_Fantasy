@@ -150,6 +150,7 @@ class HomeFragment : Fragment() {
         userTeamId: String,
         opponentTeamId: String?
     ) {
+        Log.d("HomeFragment","FetchOppenentDetailsAndAddMatchup entered")
         if (opponentTeamId == null) return
 
         // Fetch opponent team details (including image URL)
