@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 //        scheduleWeeklyPlayerProjectionsWorker()
 
 
@@ -89,7 +90,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
 ////         Create an instance of PlayerDataManager
 //        val playerDataManager = PlayerDataManager()
 //
@@ -101,8 +101,6 @@ class MainActivity : AppCompatActivity() {
 //            playerDataManager.fetchAndStorePlayerProjections()
 //      }
 
-
-         */
 
         // Initialize FirebaseAuth
 
