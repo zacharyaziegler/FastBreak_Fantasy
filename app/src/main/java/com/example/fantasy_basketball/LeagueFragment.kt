@@ -94,12 +94,11 @@ class LeagueFragment : Fragment() {
 
         val currentUserId = auth.currentUser?.uid ?: return
 
-        // Check if the user is the commissioner
+        // Fetch the league document from Firestore to check if the user is the commissioner
         firestore.collection("Leagues").document(leagueId).get().addOnSuccessListener { leagueDoc ->
             if (leagueDoc.exists()) {
                 val commissionerId = leagueDoc.getString("commissionerID")
-                val leagueName = leagueDoc.getString("leagueName")
-                    ?: "Unknown League"  // Get the league name here
+                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
 
                 // Only make "League Settings" visible if the current user is the commissioner
                 if (commissionerId == currentUserId) {
@@ -110,10 +109,9 @@ class LeagueFragment : Fragment() {
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.action_league_info -> {
-                            // Navigate to League Info fragment (you can implement this)
+                            // Navigate to League Info fragment
                             true
                         }
-
                         R.id.action_invite_friends -> {
                             // Navigate to Invite Friends fragment
                             val bundle = Bundle().apply {
@@ -127,7 +125,6 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
-
                         R.id.action_league_settings -> {
                             // Navigate to League Settings fragment and pass the league name
                             val bundle = Bundle().apply {
@@ -139,32 +136,27 @@ class LeagueFragment : Fragment() {
                                 bundle
                             )
                             true
-                        } R.id.action_league_chat -> {
-                        // Navigate to League Chat fragment and pass the leagueId
-                        val bundle = Bundle().apply {
-                            putString("leagueId", leagueId)
                         }
-
+                        R.id.action_league_chat -> {
+                            // Navigate to League Chat fragment and pass the leagueId
+                            val bundle = Bundle().apply {
+                                putString("leagueId", leagueId)
+                            }
+                            findNavController().navigate(
+                                R.id.action_leagueFragment_to_leagueChatFragment,
+                                bundle
+                            )
+                            true
+                        }
                         else -> false
                     }
-
-                    findNavController().navigate(
-                        R.id.action_leagueFragment_to_leagueChatFragment,
-                        bundle
-                    )
-                    true
                 }
-                else -> false
-                    }
-                }
-
 
                 popupMenu.show()
-
             }
         }
-
     }
+
 
     private fun loadLeagueAndTeamData() {
         val currentUserId = auth.currentUser?.uid ?: return
