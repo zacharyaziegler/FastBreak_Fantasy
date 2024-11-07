@@ -39,6 +39,9 @@
         <action
             android:id="@+id/action_homeFragment_to_joinLeagueFragment"
             app:destination="@id/joinLeagueFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_rosterFragment"
+            app:destination="@id/rosterFragment" />
     </fragment>
 
 
@@ -171,4 +174,8 @@
     <action
         android:id="@+id/action_editTeamInfoFragment_to_teamInfoFragment"
         app:destination="@id/teamInfoFragment" />
+    <fragment
+        android:id="@+id/rosterFragment"
+        android:name="com.example.fantasy_basketball.RosterFragment"
+        android:label="RosterFragment" />
 </navigation>
