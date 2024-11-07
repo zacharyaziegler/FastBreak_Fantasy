@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //scheduleWeeklyPlayerProjectionsWorker()
+//        scheduleWeeklyPlayerProjectionsWorker()
 
 
 
@@ -89,18 +89,18 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        // Create an instance of PlayerDataManager
-        val playerDataManager = PlayerDataManager()
 
-        /*
-        // Launch a coroutine to fetch and store the players
-        CoroutineScope(Dispatchers.IO).launch {
-           println("Entered Coroutine")
+////         Create an instance of PlayerDataManager
+//        val playerDataManager = PlayerDataManager()
+//
+////         Launch a coroutine to fetch and store the players
+//        CoroutineScope(Dispatchers.IO).launch {
+//           println("Entered Coroutine")
+//
+//            playerDataManager.fetchAndStorePlayersFromTeam()
+//            playerDataManager.fetchAndStorePlayerProjections()
+//      }
 
-           // playerDataManager.fetchAndStorePlayersFromTeam()
-            playerDataManager.fetchAndStorePlayerProjections()
-
-      }
 
          */
 
@@ -200,6 +200,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
     private fun scheduleWeeklyPlayerProjectionsWorker() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
@@ -218,6 +219,7 @@ class MainActivity : AppCompatActivity() {
             playerProjectionsWorkRequest
         )
     }
+
 
 
 

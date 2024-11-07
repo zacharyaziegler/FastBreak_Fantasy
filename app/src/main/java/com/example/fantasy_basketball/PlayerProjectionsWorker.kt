@@ -19,7 +19,7 @@ class PlayerProjectionsWorker (
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     // Fetch player projections and update Firestore
-                    playerDataManager.fetchAndStorePlayerProjections()
+//                    playerDataManager.fetchAndStorePlayerProjections()
                 } catch (e: Exception) {
                     e.printStackTrace()
                     // If an error occurs, we return Result.failure()
