@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
 //        scheduleWeeklyPlayerProjectionsWorker()
 
 
@@ -101,7 +102,6 @@ class MainActivity : AppCompatActivity() {
 //            playerDataManager.fetchAndStorePlayerProjections()
 //      }
 
-
         // Initialize FirebaseAuth
 
         /*
@@ -148,7 +148,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             // If not signed in, stay on the login fragment
             bottomNavigation.visibility = View.GONE
+
             navController.navigate(R.id.loginFragment)
+
         }
 
 
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.ic_proj -> {
-                    navController.navigate(R.id.playerListFragment)
+                    navController.navigate(R.id.rosterFragment)
                     true
                 }
                 else -> false
