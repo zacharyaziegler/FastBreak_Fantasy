@@ -24,3 +24,47 @@ data class TeamRosterBody(
     val teamID: String,          // Unique ID for the team
     val roster: List<Player>  // List of players in the team
 )
+
+data class ADPResponse(
+    val statusCode: Int,
+    val body: ADPBody
+)
+
+data class ADPBody(
+    val adpDate: String,
+    val adpList: List<ADPPlayer>
+)
+
+data class ADPPlayer(
+    val overallADP: String,
+    val playerID: String,
+    val longName: String,
+    val posADP: String
+)
+
+data class PlayerGameStatsResponse(
+    val statusCode: Int,
+    val body: Map<String, PlayerGameStatsBody>
+)
+
+data class PlayerGameStatsBody(
+    val pts: String,
+    val reb: String,
+    val ast: String,
+    val stl: String,
+    val blk: String,
+    val TOV: String,
+    val fantasyPoints: String,
+    val gameID: String
+)
+
+fun PlayerGameStatsBody.extractOpponentAndDate(): Pair<String, String> {
+    val parts = gameID.split("_")
+    val rawDate = parts[0]
+    val opponent = if (parts.size > 1) parts[1] else "Unknown"
+
+    val formattedDate = "${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}"
+
+    return Pair(opponent, formattedDate)
+}
+

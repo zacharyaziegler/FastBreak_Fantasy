@@ -59,15 +59,6 @@
         android:label="Player Search"
         tools:layout="@layout/fragment_player_search" />
 
-    <fragment
-        android:id="@+id/playerStatsFragment"
-        android:name="com.example.fantasy_basketball.PlayerStatsFragment"
-        android:label="Player Stats" />
-
-    <fragment
-        android:id="@+id/playerProjectionsFragment"
-        android:name="com.example.fantasy_basketball.PlayerProjectionsFragment"
-        android:label="Player Stats" />
 
     <fragment
         android:id="@+id/playerListFragment"
@@ -101,6 +92,9 @@
     <action
         android:id="@+id/action_createLeagueFragment_to_inviteFriendsFragment"
         app:destination="@id/inviteFriendsFragment" />
+    <action
+        android:id = "@+id/action_createLeagueFragment_to_leagueChatFragment"
+        app:destination= "@id/leagueChatFragment"/>
 
     <!-- InviteFriendsFragment -->
     <fragment
@@ -149,6 +143,24 @@
     <action
         android:id="@+id/action_leagueFragment_to_teamInfoFragment"
         app:destination="@id/teamInfoFragment" />
+    <action
+
+        android:id="@+id/action_leagueFragment_to_leagueChatFragment"
+        app:destination="@id/leagueChatFragment" />
+
+        android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
+        app:destination="@id/inviteFriendsFragment" />
+
+    <!-- LeagueSettingsFragment-->
+    <fragment
+        android:id="@+id/leagueSettingsFragment"
+        android:name="com.example.fantasy_basketball.LeagueSettingsFragment"
+        android:label="LeagueSettingsFragment"
+        tools:layout="@layout/fragment_league_settings" />
+    <action
+        android:id="@+id/action_leagueFragment_to_leagueSettingsFragment"
+        app:destination="@id/leagueSettingsFragment" />
+
 
     <!-- TeamInfoFragment -->
     <fragment
@@ -174,8 +186,18 @@
     <action
         android:id="@+id/action_editTeamInfoFragment_to_teamInfoFragment"
         app:destination="@id/teamInfoFragment" />
+
     <fragment
         android:id="@+id/rosterFragment"
         android:name="com.example.fantasy_basketball.RosterFragment"
         android:label="RosterFragment" />
+
+    <!--LeagueChatFragment -->
+    <fragment
+        android:id="@+id/leagueChatFragment"
+        android:name="com.example.fantasy_basketball.LeagueChatFragment"
+        android:label="League Chat" />
+    <argument
+        android:name="leagueId"
+        app:argType="string" />
 </navigation>
