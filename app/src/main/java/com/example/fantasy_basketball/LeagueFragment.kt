@@ -139,16 +139,15 @@ class LeagueFragment : Fragment() {
                                 bundle
                             )
                             true
+                        } R.id.action_league_chat -> {
+                        // Navigate to League Chat fragment and pass the leagueId
+                        val bundle = Bundle().apply {
+                            putString("leagueId", leagueId)
                         }
 
-
-
-
-                R.id.action_league_chat -> {
-                    // Navigate to League Chat fragment and pass the leagueId
-                    val bundle = Bundle().apply {
-                        putString("leagueId", leagueId)
+                        else -> false
                     }
+
                     findNavController().navigate(
                         R.id.action_leagueFragment_to_leagueChatFragment,
                         bundle
@@ -158,6 +157,7 @@ class LeagueFragment : Fragment() {
                 else -> false
                     }
                 }
+
 
                 popupMenu.show()
 
