@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
-    <!-- Player Picture Column -->
+
     <ImageView
         android:id="@+id/playerPicture"
         android:layout_width="50dp"
@@ -15,13 +15,13 @@
         android:layout_marginEnd="8dp"
          />
 
-    <!-- Player Name and Details (Team, Position, Status) -->
+
     <LinearLayout
         android:layout_width="172dp"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Player Name Column -->
+
         <TextView
             android:id="@+id/playerName"
             android:layout_width="match_parent"
@@ -30,7 +30,7 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Team, Position, Status -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="21dp"
@@ -58,8 +58,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Player Stats Columns -->
-    <!-- Points Column -->
+
     <TextView
         android:id="@+id/playerPoints"
         android:layout_width="0dp"
@@ -68,18 +67,18 @@
         android:layout_height="47dp"
         android:text="Points" />
 
-    <!-- Average Score Column -->
+
     <TextView
-        android:id="@+id/playerAvg"
+        android:id="@+id/playerRebounds"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_gravity="center"
         android:layout_height="47dp"
         android:text="Avg" />
 
-    <!-- Minutes Played Column -->
+
     <TextView
-        android:id="@+id/playerMinutes"
+        android:id="@+id/playerAssists"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_gravity="center"

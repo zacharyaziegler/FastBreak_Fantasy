@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.work.Constraints
@@ -21,7 +22,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 //        scheduleWeeklyPlayerProjectionsWorker()
+
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -81,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
 ////         Create an instance of PlayerDataManager
 //        val playerDataManager = PlayerDataManager()
 //
@@ -92,7 +101,24 @@ class MainActivity : AppCompatActivity() {
 //            playerDataManager.fetchAndStorePlayerProjections()
 //      }
 
+
+         */
+
         // Initialize FirebaseAuth
+
+        /*
+
+        FirebaseApp.initializeApp(this)
+
+        val appCheck = FirebaseAppCheck.getInstance()
+        appCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
+
+         */
+
+
+
 
         auth = FirebaseAuth.getInstance()
 
@@ -108,6 +134,13 @@ class MainActivity : AppCompatActivity() {
 
         //navController.navigate(R.id.playerProjectionsFragment)
 
+/*
+        lifecycleScope.launch {
+            playerDataManager.fetchAndStoreADP()
+        }
+
+ */
+
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
             // If the user is signed in, navigate to the home fragment
@@ -119,6 +152,8 @@ class MainActivity : AppCompatActivity() {
             bottomNavigation.visibility = View.GONE
             navController.navigate(R.id.loginFragment)
         }
+
+
 
             //
 
@@ -164,24 +199,29 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-//    private fun scheduleWeeklyPlayerProjectionsWorker() {
-//        val constraints = Constraints.Builder()
-//            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
-//            .build()
-//
-//        // Create a periodic work request with constraints
-//        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
-//            5, TimeUnit.MINUTES
-//        )
-//            .setConstraints(constraints)
-//            .build()
-//
-//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-//            "PlayerProjectionsWork",
-//            ExistingPeriodicWorkPolicy.KEEP,
-//            playerProjectionsWorkRequest
-//        )
-//    }
+
+
+    private fun scheduleWeeklyPlayerProjectionsWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
+            .build()
+
+        // Create a periodic work request with constraints
+        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
+            7, TimeUnit.DAYS
+        )
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "PlayerProjectionsWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            playerProjectionsWorkRequest
+        )
+    }
+
+
+
 
 
 

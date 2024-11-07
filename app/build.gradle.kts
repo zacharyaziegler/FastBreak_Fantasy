@@ -78,6 +78,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.firebase.appcheck.ktx)
+    implementation(libs.firebase.appcheck.playintegrity)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

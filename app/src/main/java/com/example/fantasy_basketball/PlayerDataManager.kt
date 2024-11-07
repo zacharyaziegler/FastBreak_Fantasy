@@ -7,7 +7,10 @@ import com.example.fantasy_basketball.PlayerProjection
 import com.example.fantasy_basketball.PlayerStats
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -250,6 +253,55 @@ class PlayerDataManager {
             println("Error fetching or storing player data from teams: ${e.message}")
         }
     }
+
+
+    suspend fun fetchAndStoreADP() {
+        try {
+            println("Starting API request to fetch player ADP data...")
+
+            // Fetch the ADP list from the API
+            val response = api.getNBAADP()
+            if (response.statusCode != 200) {
+                println("Failed to fetch ADP data, status code: ${response.statusCode}")
+                return
+            }
+
+            val adpList = response.body.adpList
+
+            // Check if ADP data was fetched
+            if (adpList.isEmpty()) {
+                println("No ADP data fetched to store in Firestore.")
+                return
+            }
+
+            // Store the ADP list in Firestore with `overallADP` as a Double field
+            val batch = db.batch()
+            adpList.forEach { adpPlayer ->
+                // Use a unique combination of overallADP and playerID for the document ID to avoid conflicts
+                val adpDocumentId = "${adpPlayer.overallADP}_${adpPlayer.playerID}"
+                val playerRef = db.collection("draftposition").document(adpDocumentId)
+
+                // Store overallADP as a Double
+                val adpData = mapOf(
+                    "overallADP" to adpPlayer.overallADP.toDoubleOrNull(),  // Store as Double
+                    "longName" to adpPlayer.longName,
+                    "posADP" to adpPlayer.posADP,
+                    "playerID" to adpPlayer.playerID
+                )
+                batch.set(playerRef, adpData)
+            }
+
+            // Commit the batch
+            batch.commit().await()
+            println("Successfully stored ADP data in Firestore with `overallADP` as a numeric field.")
+
+        } catch (e: Exception) {
+            println("Error in fetchAndStoreADP: ${e.message}")
+        }
+    }
+
+
+
 }
 
 

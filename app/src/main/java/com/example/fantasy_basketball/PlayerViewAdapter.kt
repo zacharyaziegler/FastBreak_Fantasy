@@ -25,8 +25,8 @@ class PlayerAdapter(
         val playerStatus: TextView = view.findViewById(R.id.playerStatus)
         val playerImage: ImageView = view.findViewById(R.id.playerPicture)
         val playerPoints: TextView = view.findViewById(R.id.playerPoints)
-        val playerAvg: TextView = view.findViewById(R.id.playerAvg)
-        val playerMin: TextView = view.findViewById(R.id.playerMinutes)
+        val playerRebounds: TextView = view.findViewById(R.id.playerRebounds)
+        val playerAssists: TextView = view.findViewById(R.id.playerAssists)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -58,15 +58,15 @@ class PlayerAdapter(
                 .placeholder(R.drawable.player)
                 .into(holder.playerImage)
 
-            // Set player's projections (if available)
-            player.projection?.let { projection ->
-                holder.playerPoints.text = if (projection.fantasyPoints.isNotEmpty()) projection.fantasyPoints else "--"
-                holder.playerAvg.text = if (projection.pts.isNotEmpty()) projection.pts else "--"
-                holder.playerMin.text = if (projection.mins.isNotEmpty()) projection.mins else "--"
+            // Set player's stats (if available)
+            player.stats?.let { stats ->
+                holder.playerPoints.text =  stats.pts ?: "--"
+                holder.playerRebounds.text = stats.reb ?: "--"
+                holder.playerAssists.text = stats.ast ?: "--"
             } ?: run {
                 holder.playerPoints.text = "--"
-                holder.playerAvg.text = "--"
-                holder.playerMin.text = "--"
+                holder.playerRebounds.text = "--"
+                holder.playerAssists.text = "--"
             }
 
             // Set click listener to open PlayerProfileFragment
