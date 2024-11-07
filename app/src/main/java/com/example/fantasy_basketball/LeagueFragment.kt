@@ -130,20 +130,20 @@ class LeagueFragment : Fragment() {
                             }
                             findNavController().navigate(R.id.action_leagueFragment_to_leagueSettingsFragment, bundle)
                             true
+                        } R.id.action_league_chat -> {
+                        // Navigate to League Chat fragment and pass the leagueId
+                        val bundle = Bundle().apply {
+                            putString("leagueId", leagueId)
                         }
+                        findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
+                        true
+                    }
+
                         else -> false
                     }
                 }
 
-                R.id.action_league_chat -> {
-                    // Navigate to League Chat fragment and pass the leagueId
-                    val bundle = Bundle().apply {
-                        putString("leagueId", leagueId)
-                    }
-                    findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
-                    true
-                }
-                else -> false
+
 
 
                 popupMenu.show()

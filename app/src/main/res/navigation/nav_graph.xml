@@ -139,7 +139,11 @@
         android:id="@+id/leagueFragment"
         android:name="com.example.fantasy_basketball.LeagueFragment"
         android:label="LeagueFragment"
-        tools:layout="@layout/fragment_league" />
+        tools:layout="@layout/fragment_league" >
+        <action
+            android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
+            app:destination="@id/inviteFriendsFragment" />
+    </fragment>
     <action
         android:id="@+id/action_leagueFragment_to_teamInfoFragment"
         app:destination="@id/teamInfoFragment" />
@@ -147,9 +151,6 @@
 
         android:id="@+id/action_leagueFragment_to_leagueChatFragment"
         app:destination="@id/leagueChatFragment" />
-
-        android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
-        app:destination="@id/inviteFriendsFragment" />
 
     <!-- LeagueSettingsFragment-->
     <fragment
