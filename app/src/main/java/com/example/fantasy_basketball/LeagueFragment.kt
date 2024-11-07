@@ -98,7 +98,8 @@ class LeagueFragment : Fragment() {
         firestore.collection("Leagues").document(leagueId).get().addOnSuccessListener { leagueDoc ->
             if (leagueDoc.exists()) {
                 val commissionerId = leagueDoc.getString("commissionerID")
-                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"  // Get the league name here
+                val leagueName = leagueDoc.getString("leagueName")
+                    ?: "Unknown League"  // Get the league name here
 
                 // Only make "League Settings" visible if the current user is the commissioner
                 if (commissionerId == currentUserId) {
@@ -112,6 +113,7 @@ class LeagueFragment : Fragment() {
                             // Navigate to League Info fragment (you can implement this)
                             true
                         }
+
                         R.id.action_invite_friends -> {
                             // Navigate to Invite Friends fragment
                             val bundle = Bundle().apply {
@@ -119,37 +121,49 @@ class LeagueFragment : Fragment() {
                                 putString("leagueName", leagueName) // Pass league name
                                 putString("inviteCode", inviteCode)
                             }
-                            findNavController().navigate(R.id.action_leagueFragment_to_inviteFriendsFragment, bundle)
+                            findNavController().navigate(
+                                R.id.action_leagueFragment_to_inviteFriendsFragment,
+                                bundle
+                            )
                             true
                         }
+
                         R.id.action_league_settings -> {
                             // Navigate to League Settings fragment and pass the league name
                             val bundle = Bundle().apply {
                                 putString("leagueId", leagueId)
                                 putString("leagueName", leagueName) // Pass league name
                             }
-                            findNavController().navigate(R.id.action_leagueFragment_to_leagueSettingsFragment, bundle)
+                            findNavController().navigate(
+                                R.id.action_leagueFragment_to_leagueSettingsFragment,
+                                bundle
+                            )
                             true
                         }
-                        else -> false
-                    }
-                }
+
+
+
 
                 R.id.action_league_chat -> {
                     // Navigate to League Chat fragment and pass the leagueId
                     val bundle = Bundle().apply {
                         putString("leagueId", leagueId)
                     }
-                    findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
+                    findNavController().navigate(
+                        R.id.action_leagueFragment_to_leagueChatFragment,
+                        bundle
+                    )
                     true
                 }
                 else -> false
-
+                    }
+                }
 
                 popupMenu.show()
 
             }
         }
+
     }
 
     private fun loadLeagueAndTeamData() {
