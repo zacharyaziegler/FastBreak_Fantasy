@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        scheduleWeeklyPlayerProjectionsWorker()
+       // scheduleWeeklyPlayerProjectionsWorker()
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity() {
 
 
         // Create an instance of PlayerDataManager
-        val playerDataManager = PlayerDataManager()
+        //
+        /*val playerDataManager = PlayerDataManager()
 
         // Launch a coroutine to fetch and store the players
         CoroutineScope(Dispatchers.IO).launch {
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity() {
            // playerDataManager.fetchAndStorePlayersFromTeam()
             playerDataManager.fetchAndStorePlayerProjections()
       }
-
+    */
         // Initialize FirebaseAuth
 
         auth = FirebaseAuth.getInstance()

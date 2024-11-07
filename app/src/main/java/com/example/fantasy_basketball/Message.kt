@@ -5,5 +5,6 @@ import com.google.firebase.Timestamp
 data class Message(
     val senderId: String = "",
     val messageText: String = "",
-    val timestamp: Timestamp? = null,
+    val timestamp: com.google.firebase.Timestamp? = null
 )
+
