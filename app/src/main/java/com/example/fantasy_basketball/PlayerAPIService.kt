@@ -31,4 +31,22 @@ interface PlayerAPIService {
         @Query("statsToGet") statsToGet: String = "totals"
     ): TeamRosterResponse
 
+    @Headers(
+        "x-rapidapi-host: tank01-fantasy-stats.p.rapidapi.com",
+        "x-rapidapi-key: a0ac93dc3amsh37d315dd4ab6990p119d93jsn2d0bf27cf642"
+    )
+    @GET("getNBAADP")
+    suspend fun getNBAADP(): ADPResponse
+
+
+    @Headers(
+        "x-rapidapi-host: tank01-fantasy-stats.p.rapidapi.com",
+        "x-rapidapi-key: a0ac93dc3amsh37d315dd4ab6990p119d93jsn2d0bf27cf642"
+    )
+    @GET("getNBAGamesForPlayer")
+    suspend fun getNBAGamesForPlayer(
+        @Query("playerID") playerID: String,
+        @Query("season") season: String = "2025",
+        @Query("fantasyPoints") fantasyPoints: String = "true",
+    ): PlayerGameStatsResponse
 }
