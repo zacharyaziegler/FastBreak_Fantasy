@@ -151,6 +151,10 @@
 
         android:id="@+id/action_leagueFragment_to_leagueChatFragment"
         app:destination="@id/leagueChatFragment" />
+    <action
+        android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
+        app:destination="@id/inviteFriendsFragment" />
+
 
     <!-- LeagueSettingsFragment-->
     <fragment
