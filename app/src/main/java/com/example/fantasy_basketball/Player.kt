@@ -117,3 +117,17 @@ data class PlayerFirestore(
     val blocksProj: String? = null
 )
 
+data class PlayerGameLog(
+    val date: String,
+    val opponent: String,
+    val pts: String,
+    val reb: String,
+    val ast: String,
+    val stl: String,
+    val blk: String,
+    val tov: String,
+    val fantasyPoints: String
+)
+
+
+

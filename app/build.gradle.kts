@@ -46,6 +46,7 @@ android {
     buildFeatures {
         compose = true
         viewBinding = true
+        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -68,7 +69,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.legacy.support.v4)
-    implementation(libs.androidx.recyclerview)
+//    implementation(libs.androidx.recyclerview)
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -77,6 +78,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.firebase.appcheck.ktx)
+    implementation(libs.firebase.appcheck.playintegrity)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -127,6 +131,7 @@ dependencies {
     implementation("com.google.android.material:material:1.1.0")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
    // implementation("com.eowise:recyclerview-stickyheaders:0.4.3")
 
 }

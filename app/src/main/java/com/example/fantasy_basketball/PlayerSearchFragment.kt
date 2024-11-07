@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.toObject
@@ -32,6 +34,13 @@ class PlayerSearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_player_search, container, false)
+
+
+        val firebaseAppCheck = FirebaseAppCheck.getInstance()
+
+        firebaseAppCheck.installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
 
         firestore = FirebaseFirestore.getInstance()
 
@@ -74,7 +83,7 @@ class PlayerSearchFragment : Fragment() {
                         Log.d("Document Data", document.data.toString())
 
                         // Extract fields directly from the document
-                        val playerID = document.getString("playerID") ?: ""
+                        val playerID = document.id
                         val longName = document.getString("longName") ?: ""
                         val jerseyNum = document.getString("jerseyNum") ?: ""
                         val pos = document.getString("pos") ?: ""
