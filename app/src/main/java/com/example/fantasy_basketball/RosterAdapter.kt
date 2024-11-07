@@ -59,7 +59,7 @@ class RosterAdapter(
             // Load player's headshot using Glide
             Glide.with(holder.itemView.context)
                 .load(player.nbaComHeadshot)
-                .placeholder(R.drawable.player)
+                .placeholder(R.drawable.player)  // This will be used only if the image fails to load
                 .into(holder.playerImage)
 
             // Set player's projections (if available)
@@ -76,17 +76,23 @@ class RosterAdapter(
         } else {
             // If the player slot is empty, set all fields to default values
             holder.playerName.text = ""
-            holder.playerPosition .text = ""
+            holder.playerPosition.text = ""
+            holder.playerTeam.text = ""
             holder.playerStatus.text = ""
             holder.playerPoints.text = ""
             holder.playerAvg.text = ""
             holder.playerMin.text = ""
+
+            // Don't load any image when there is no player
+            holder.playerImage.setImageDrawable(null)
         }
 
         holder.selectPlayerButton.setOnClickListener {
             onSlotClick(position, slot)
         }
     }
+
+
 
     override fun getItemCount(): Int {
         return players.size
