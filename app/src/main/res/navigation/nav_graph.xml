@@ -150,6 +150,9 @@
     <action
         android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
         app:destination="@id/inviteFriendsFragment" />
+    <action
+        android:id="@+id/action_leagueFragment_to_draftRoomFragment"
+        app:destination="@id/draftRoomFragment" />
 
     <!-- LeagueSettingsFragment-->
     <fragment
@@ -200,4 +203,13 @@
     <argument
         android:name="leagueId"
         app:argType="string" />
+
+    <!--DraftRoomFragment-->
+    <fragment
+        android:id="@+id/draftRoomFragment"
+        android:name="com.example.fantasy_basketball.DraftRoomFragment"
+        android:label="DraftRoomFragment" />
+    <action
+        android:id="@+id/action_draftRoomFragment_to_leagueFragment"
+        app:destination="@id/leagueFragment" />
 </navigation>

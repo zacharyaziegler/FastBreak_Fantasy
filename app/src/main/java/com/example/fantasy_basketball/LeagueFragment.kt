@@ -75,6 +75,14 @@ class LeagueFragment : Fragment() {
             showPopupMenu(it)
         }
 
+        // Navigate to Draft Room when the button is clicked
+        enterDraftRoomButton.setOnClickListener {
+            val bundle = Bundle().apply {
+                putString("leagueId", leagueId)
+            }
+            findNavController().navigate(R.id.action_leagueFragment_to_draftRoomFragment, bundle)
+        }
+
         // Load league and team data
         loadLeagueAndTeamData()
 
@@ -273,5 +281,11 @@ class LeagueFragment : Fragment() {
 
         // Navigate to TeamInfoFragment and pass leagueId and teamId
         findNavController().navigate(R.id.action_leagueFragment_to_teamInfoFragment, bundle)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Make sure global navigation bar is visible when in LeagueFragment
+        (activity as? MainActivity)?.showBottomNavigation()
     }
 }
