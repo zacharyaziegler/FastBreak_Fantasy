@@ -205,4 +205,9 @@
     <argument
         android:name="leagueId"
         app:argType="string" />
+
+    <fragment
+        android:id="@+id/rulesFragment"
+        android:name="com.example.fantasy_basketball.RulesFragment"
+        android:label="Rules" />
 </navigation>
