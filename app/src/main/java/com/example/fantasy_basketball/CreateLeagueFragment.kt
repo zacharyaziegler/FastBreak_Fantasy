@@ -166,13 +166,14 @@ class CreateLeagueFragment : Fragment() {
 
             teamsCollection.document(teamID).set(teamData)
                 .addOnSuccessListener {
-                    teamIDList.add(teamID)
+                    teamIDList.add(teamID) // Add teamID to the draft order list
                     teamsCreated++
                     progressBar.progress = (30 + (teamsCreated.toFloat() / leagueSize * 30)).toInt()
 
-                    // Once all teams are created, generate matchups
+                    // Once all teams are created, finalize draft order and matchups
                     if (teamsCreated == leagueSize) {
                         assignCommissionerToTeam(leagueID, commissionerID, teamIDList[0])
+                        finalizeDraftOrder(leagueID, teamIDList) // Add draft order to the league
                         createMatchupsSubcollection(leagueID, teamIDList)
                     }
                 }
@@ -181,7 +182,6 @@ class CreateLeagueFragment : Fragment() {
                 }
         }
     }
-
 
     // Create Matchups Subcollection in Firestore with 19 weeks of scheduling
     private fun createMatchupsSubcollection(leagueID: String, teamIDList: List<String>) {
@@ -279,5 +279,19 @@ class CreateLeagueFragment : Fragment() {
                 )
             }
         }
+    }
+
+    // Finalize the draft order by adding it to the league document
+    private fun finalizeDraftOrder(leagueID: String, teamIDList: List<String>) {
+        val leagueRef = firestore.collection("Leagues").document(leagueID)
+
+        val draftOrder = teamIDList // Make it teamIDList.shuffled() for random, else it is in order
+        leagueRef.update("draftOrder", draftOrder)
+            .addOnSuccessListener {
+                Log.d("CreateLeagueFragment", "Draft order set successfully: $draftOrder")
+            }
+            .addOnFailureListener { e ->
+                Log.e("CreateLeagueFragment", "Failed to set draft order: ${e.message}", e)
+            }
     }
 }

@@ -11,7 +11,8 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.fragment.findNavController
 
 class DraftRoomFragment : Fragment() {
-    private var leagueId: String? = null
+    private lateinit var leagueId: String
+    private lateinit var teamId: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -20,10 +21,19 @@ class DraftRoomFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_draft_room, container, false)
         val exitButton = view.findViewById<TextView>(R.id.exitDraftRoom)
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.draftRoomBottomNav)
-        leagueId = arguments?.getString("leagueId")
+        // Retrieve leagueId and teamId from arguments
+        arguments?.let {
+            leagueId = it.getString("leagueId") ?: ""
+            teamId = it.getString("teamId") ?: ""
+        }
 
         // Set default fragment to load on entry
-        loadFragment(DraftPlayersFragment())
+        loadFragment(DraftPlayersFragment().apply {
+            arguments = Bundle().apply {
+                putString("leagueId", leagueId)
+                putString("teamId", teamId)
+            }
+        })
 
         // Set up the "Exit" button to navigate back to LeagueFragment
         exitButton.setOnClickListener {
@@ -37,15 +47,30 @@ class DraftRoomFragment : Fragment() {
         bottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_players -> {
-                    loadFragment(DraftPlayersFragment())
+                    loadFragment(DraftPlayersFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("leagueId", leagueId)
+                            putString("teamId", teamId)
+                        }
+                    })
                     true
                 }
                 R.id.nav_your_team -> {
-                    loadFragment(YourTeamFragment())
+                    loadFragment(YourTeamFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("leagueId", leagueId)
+                            putString("teamId", teamId)
+                        }
+                    })
                     true
                 }
                 R.id.nav_chat -> {
-                    loadFragment(DraftChatFragment())
+                    loadFragment(DraftChatFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("leagueId", leagueId)
+                            putString("teamId", teamId)
+                        }
+                    })
                     true
                 }
                 else -> false

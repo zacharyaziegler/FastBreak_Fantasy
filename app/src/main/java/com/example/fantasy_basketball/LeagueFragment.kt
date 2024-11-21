@@ -32,6 +32,7 @@ class LeagueFragment : Fragment() {
     private lateinit var draftCountdownTextView: TextView
     private lateinit var enterDraftRoomButton: Button
     private lateinit var recyclerView: RecyclerView
+    private lateinit var teamInfoButton: ImageButton
 
     private var inviteCode: String = ""
     private var countdownTimer: CountDownTimer? = null
@@ -60,6 +61,7 @@ class LeagueFragment : Fragment() {
         draftCountdownTextView = view.findViewById(R.id.draftCountdownTextView)
         enterDraftRoomButton = view.findViewById(R.id.enterDraftRoomButton)
         recyclerView = view.findViewById(R.id.recyclerViewRoster)
+        teamInfoButton = view.findViewById(R.id.teamInfoButton)
 
         // Initialize RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -75,14 +77,23 @@ class LeagueFragment : Fragment() {
             showPopupMenu(it)
         }
 
-        // Navigate to Draft Room when the button is clicked
-        enterDraftRoomButton.setOnClickListener {
-            val bundle = Bundle().apply {
-                putString("leagueId", leagueId)
-            }
-            findNavController().navigate(R.id.action_leagueFragment_to_draftRoomFragment, bundle)
+        teamInfoButton.setOnClickListener {
+            navigateToTeamInfoFragment()
         }
 
+        // Navigate to Draft Room when the button is clicked
+        enterDraftRoomButton.setOnClickListener {
+            // Ensure teamId is initialized before navigating
+            if (this::teamId.isInitialized) {
+                val bundle = Bundle().apply {
+                    putString("leagueId", leagueId)
+                    putString("teamId", teamId)
+                }
+                findNavController().navigate(R.id.action_leagueFragment_to_draftRoomFragment, bundle)
+            } else {
+                Log.e("LeagueFragment", "Team ID not initialized. Cannot navigate to DraftRoomFragment.")
+            }
+        }
         // Load league and team data
         loadLeagueAndTeamData()
 

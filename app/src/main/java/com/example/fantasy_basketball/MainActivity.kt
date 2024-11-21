@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity() {
 
 
         // Use the helper class to check permissions and schedule WorkManager
-        WorkManagerHelper.checkAndRequestNotificationPermission(this)
-        WorkManagerHelper.scheduleWorkManager(this)
+//        WorkManagerHelper.checkAndRequestNotificationPermission(this)
+//        WorkManagerHelper.scheduleWorkManager(this)
 
 
         val requestPermissionLauncher = registerForActivityResult(
