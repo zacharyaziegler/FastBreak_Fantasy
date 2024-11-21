@@ -135,4 +135,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.2.1")
    // implementation("com.eowise:recyclerview-stickyheaders:0.4.3")
 
+    //implement cardview
+    implementation ("androidx.cardview:cardview:1.0.0")
+
 }

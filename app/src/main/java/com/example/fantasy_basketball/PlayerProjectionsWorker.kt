@@ -12,7 +12,7 @@ class PlayerProjectionsWorker (
     workerParams: WorkerParameters
     ) : Worker(context, workerParams) {
 
-        private val playerDataManager = PlayerDataManager()
+        //private val playerDataManager = PlayerDataManager()
 
         override fun doWork(): Result {
             // Use a coroutine to run the task asynchronously

@@ -59,7 +59,6 @@
         android:label="Player Search"
         tools:layout="@layout/fragment_player_search" />
 
-
     <fragment
         android:id="@+id/playerInfoFragment"
         android:name="com.example.fantasy_basketball.PlayerInfoFragment"
@@ -143,8 +142,12 @@
         android:id="@+id/action_leagueFragment_to_leagueChatFragment"
         app:destination="@id/leagueChatFragment" />
     <action
+        android:id="@+id/action_leagueFragment_to_scoreboardFragment"
+        app:destination="@id/scoreboardFragment" />
+
         android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
         app:destination="@id/inviteFriendsFragment" />
+
 
 
     <!-- LeagueSettingsFragment-->
@@ -197,8 +200,19 @@
         android:name="leagueId"
         app:argType="string" />
 
+
     <fragment
         android:id="@+id/rulesFragment"
         android:name="com.example.fantasy_basketball.RulesFragment"
         android:label="Rules" />
+
+    <!--ScoreBoardFragment-->
+    <fragment
+        android:id="@+id/scoreboardFragment"
+        android:name="com.example.fantasy_basketball.ScoreboardFragment"
+        tools:layout="@layout/fragment_scoreboard">
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
+    </fragment>
 </navigation>
