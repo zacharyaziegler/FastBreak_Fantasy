@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.firebase.appcheck.ktx)
     implementation(libs.firebase.appcheck.playintegrity)
+    implementation ("com.google.firebase:firebase-appcheck-playintegrity:17.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -133,5 +134,8 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
    // implementation("com.eowise:recyclerview-stickyheaders:0.4.3")
+
+    //implement cardview
+    implementation ("androidx.cardview:cardview:1.0.0")
 
 }
