@@ -141,11 +141,12 @@
         android:id="@+id/action_leagueFragment_to_scoreboardFragment"
         app:destination="@id/scoreboardFragment" />
 
-        android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
-        app:destination="@id/inviteFriendsFragment" />
     <action
         android:id="@+id/action_leagueFragment_to_draftRoomFragment"
         app:destination="@id/draftRoomFragment" />
+    <action
+        android:id="@+id/action_leagueFragment_to_inviteFriendsFragment"
+        app:destination="@id/inviteFriendsFragment" />
 
 
     <!-- LeagueSettingsFragment-->
