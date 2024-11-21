@@ -110,7 +110,6 @@ class FirestoreWorker(appContext: Context, workerParams: WorkerParameters) :
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
-        // Create notification channel for Android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(channelId)
         }
@@ -135,8 +134,3 @@ class FirestoreWorker(appContext: Context, workerParams: WorkerParameters) :
         notificationManager?.createNotificationChannel(channel)
     }
 }
-
-
-
-
-
