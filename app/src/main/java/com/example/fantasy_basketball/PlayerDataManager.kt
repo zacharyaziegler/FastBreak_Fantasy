@@ -17,7 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 /*
 
 class PlayerDataManager {
-
+/*
     private val db = FirebaseFirestore.getInstance()
 
     // Retrofit setup with the correct API service
@@ -302,7 +302,7 @@ class PlayerDataManager {
     }
 
 
-
+*/
 }
 
 

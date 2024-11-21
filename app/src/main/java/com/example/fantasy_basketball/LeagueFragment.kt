@@ -32,6 +32,7 @@ class LeagueFragment : Fragment() {
     private lateinit var draftCountdownTextView: TextView
     private lateinit var enterDraftRoomButton: Button
     private lateinit var recyclerView: RecyclerView
+    private lateinit var teamInfoButton: ImageButton
 
     private var inviteCode: String = ""
     private var countdownTimer: CountDownTimer? = null
@@ -60,6 +61,7 @@ class LeagueFragment : Fragment() {
         draftCountdownTextView = view.findViewById(R.id.draftCountdownTextView)
         enterDraftRoomButton = view.findViewById(R.id.enterDraftRoomButton)
         recyclerView = view.findViewById(R.id.recyclerViewRoster)
+        teamInfoButton = view.findViewById(R.id.teamInfoButton)
 
         // Initialize RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -75,6 +77,23 @@ class LeagueFragment : Fragment() {
             showPopupMenu(it)
         }
 
+        teamInfoButton.setOnClickListener {
+            navigateToTeamInfoFragment()
+        }
+
+        // Navigate to Draft Room when the button is clicked
+        enterDraftRoomButton.setOnClickListener {
+            // Ensure teamId is initialized before navigating
+            if (this::teamId.isInitialized) {
+                val bundle = Bundle().apply {
+                    putString("leagueId", leagueId)
+                    putString("teamId", teamId)
+                }
+                findNavController().navigate(R.id.action_leagueFragment_to_draftRoomFragment, bundle)
+            } else {
+                Log.e("LeagueFragment", "Team ID not initialized. Cannot navigate to DraftRoomFragment.")
+            }
+        }
         // Load league and team data
         loadLeagueAndTeamData()
 
@@ -94,11 +113,12 @@ class LeagueFragment : Fragment() {
 
         val currentUserId = auth.currentUser?.uid ?: return
 
-        // Fetch the league document from Firestore to check if the user is the commissioner
+        // Check if the user is the commissioner
         firestore.collection("Leagues").document(leagueId).get().addOnSuccessListener { leagueDoc ->
             if (leagueDoc.exists()) {
                 val commissionerId = leagueDoc.getString("commissionerID")
-                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+                val leagueName = leagueDoc.getString("leagueName")
+                    ?: "Unknown League"  // Get the league name here
 
                 // Only make "League Settings" visible if the current user is the commissioner
                 if (commissionerId == currentUserId) {
@@ -109,9 +129,10 @@ class LeagueFragment : Fragment() {
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.action_league_info -> {
-                            // Navigate to League Info fragment
+                            // Navigate to League Info fragment (you can implement this)
                             true
                         }
+
                         R.id.action_invite_friends -> {
                             // Navigate to Invite Friends fragment
                             val bundle = Bundle().apply {
@@ -125,6 +146,7 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
+
                         R.id.action_league_settings -> {
                             // Navigate to League Settings fragment and pass the league name
                             val bundle = Bundle().apply {
@@ -165,10 +187,11 @@ class LeagueFragment : Fragment() {
                 }
 
                 popupMenu.show()
+
             }
         }
-    }
 
+    }
 
     private fun loadLeagueAndTeamData() {
         val currentUserId = auth.currentUser?.uid ?: return
@@ -277,5 +300,11 @@ class LeagueFragment : Fragment() {
 
         // Navigate to TeamInfoFragment and pass leagueId and teamId
         findNavController().navigate(R.id.action_leagueFragment_to_teamInfoFragment, bundle)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Make sure global navigation bar is visible when in LeagueFragment
+        (activity as? MainActivity)?.showBottomNavigation()
     }
 }

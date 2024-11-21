@@ -1,0 +1,15 @@
+<!-- res/menu/draft_room_bottom_nav.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_players"
+        android:icon="@drawable/ic_players"
+        android:title="Players" />
+    <item
+        android:id="@+id/nav_your_team"
+        android:icon="@drawable/ic_your_team"
+    android:title="Your Team" />
+    <item
+        android:id="@+id/nav_chat"
+        android:icon="@drawable/ic_chat"
+    android:title="Chat" />
+</menu>

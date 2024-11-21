@@ -5,24 +5,31 @@ import com.google.gson.annotations.SerializedName
 import android.annotation.SuppressLint
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.firebase.firestore.PropertyName
 import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
 data class Player(
-    val playerID: String = "",                    // Unique identifier for the player
+    var playerID: String = "",                    // Unique identifier for the player
     val longName: String = "",                    // Full name of the player
     val jerseyNum: String = "",                   // Player's jersey number
     val pos: String = "",                         // Position of the player
     val team: String = "",                        // Team abbreviation
     val teamID: String = "",                      // Team ID
     val nbaComHeadshot: String = "",              // URL for the NBA.com headshot
-    @SerializedName("Injury")                     // Ensure this matches the Firestore field exactly
-    val injury: Injury? = null,                   // Nullable injury details
-    @SerializedName("TotalStats")                 // Ensure this matches the Firestore field exactly
-    val stats: PlayerStats? = null,               // Nullable player statistics
-    @SerializedName("Projections")                // Ensure this matches the Firestore field exactly
-    val projection: PlayerProjection? = null      // Nullable player projection
+//    @SerializedName("Injury")                     // Ensure this matches the Firestore field exactly
+    @get:PropertyName("Injury")
+    @set:PropertyName("Injury")
+    var injury: Injury? = null,                   // Nullable injury details
+//    @SerializedName("TotalStats")                 // Ensure this matches the Firestore field exactly
+    @get:PropertyName("TotalStats")
+    @set:PropertyName("TotalStats")
+    var stats: PlayerStats? = null,               // Nullable player statistics
+//    @SerializedName("Projections")                // Ensure this matches the Firestore field exactly
+    @get:PropertyName("Projections")
+    @set:PropertyName("Projections")
+    var projection: PlayerProjection? = null      // Nullable player projection
 ): Parcelable
 
 
@@ -48,7 +55,8 @@ data class PlayerStats(
     val TOV: String? = null,                      // Turnovers
     val tptfga: String? = null,                   // Three Point Field Goals Attempted
     val OffReb: String? = null,                   // Offensive Rebounds
-    val ftm: String? = null                        // Free Throws Made
+    val ftm: String? = null,                      // Free Throws Made
+    val trueShootingPercentage: String? = null    // True Shooting Percentage
 ): Parcelable
 @Parcelize
 data class PlayerProjection(
@@ -73,7 +81,8 @@ data class Injury(
     val injReturnDate: String? = null,           // Return date from injury
     val description: String? = null,              // Injury description
     val injDate: String? = null,                  // Injury date
-    val designation: String? = null                // Injury designation (e.g., Day-To-Day)
+    val designation: String? = null,                // Injury designation (e.g., Day-To-Day)
+    val status: String? = null                    // Injury status
 ): Parcelable
 
 

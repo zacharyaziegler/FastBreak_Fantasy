@@ -178,11 +178,22 @@ class LeagueSettingsFragment : Fragment() {
     private fun saveDraftDateTime(selectedCalendar: Calendar) {
         val draftDateTime = selectedCalendar.time
 
+        // Calculate pickExpirationTime (60 seconds after draftDateTime)
+        val pickExpirationTime = Calendar.getInstance().apply {
+            time = draftDateTime
+            add(Calendar.SECOND, 5) //TODO: Change to 60 for prod
+        }.time
+
+        // Update Firestore with draftDateTime, draftStatus, currentPickIndex, and pickExpirationTime
         firestore.collection("Leagues").document(leagueId)
-            .update(mapOf(
-                "draftStatus" to "date_set",
-                "draftDateTime" to draftDateTime
-            ))
+            .update(
+                mapOf(
+                    "draftStatus" to "date_set",
+                    "draftDateTime" to draftDateTime,
+                    "currentPickIndex" to 0, // Initialize the current pick index
+                    "pickExpirationTime" to pickExpirationTime // Initialize the pick expiration time
+                )
+            )
             .addOnSuccessListener {
                 Toast.makeText(requireContext(), "Draft date/time set successfully", Toast.LENGTH_SHORT).show()
             }
@@ -191,4 +202,5 @@ class LeagueSettingsFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to set draft date/time: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
 }
