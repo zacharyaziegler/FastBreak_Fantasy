@@ -137,8 +137,15 @@ class LeagueFragment : Fragment() {
                         }
                         findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
                         true
-                    }
-
+                        }
+                        R.id.action_scoreboard -> {
+                            // Navigate to League Chat fragment and pass the leagueId
+                            val bundle = Bundle().apply {
+                                putString("leagueId", leagueId)
+                            }
+                            findNavController().navigate(R.id.action_leagueFragment_to_scoreboardFragment, bundle)
+                            true
+                        }
                         else -> false
                     }
                 }
