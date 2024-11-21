@@ -191,7 +191,6 @@ class LeagueFragment : Fragment() {
             }
         }
 
-    }
 
     private fun loadLeagueAndTeamData() {
         val currentUserId = auth.currentUser?.uid ?: return
