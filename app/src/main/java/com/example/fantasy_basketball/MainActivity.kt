@@ -48,13 +48,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-//        scheduleWeeklyPlayerProjectionsWorker()
+        scheduleWeeklyPlayerProjectionsWorker()
 
 
 
         // Use the helper class to check permissions and schedule WorkManager
-        WorkManagerHelper.checkAndRequestNotificationPermission(this)
-        WorkManagerHelper.scheduleWorkManager(this)
+       // WorkManagerHelper.checkAndRequestNotificationPermission(this)
+       // WorkManagerHelper.scheduleWorkManager(this)
 
 
         val requestPermissionLauncher = registerForActivityResult(
