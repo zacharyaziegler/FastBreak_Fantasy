@@ -15,6 +15,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class RosterFragment : Fragment() {
+
+    private lateinit var leagueId: String
+    private lateinit var teamId: String
     private lateinit var startingLineupAdapter: RosterAdapter
     private lateinit var benchAdapter: RosterAdapter
 
@@ -28,6 +31,13 @@ class RosterFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_roster, container, false)
+
+
+        // Retrieve the leagueId passed from HomeFragment
+      /*  arguments?.let {
+            leagueId = it.getString("leagueId", "")
+            teamId = it.getString("teamId", "")
+        }*/
 
         startingLineupAdapter = RosterAdapter(startingLineup, startingLineupSlots) { position, slot ->
             showPlayerSelectionDialog(position, slot, true)
@@ -49,7 +59,8 @@ class RosterFragment : Fragment() {
         // Fetch players for roster upon fragment creation
         lifecycleScope.launch {
             val fetchedRoster = fetchRosterWithPositionRequirements(FirebaseFirestore.getInstance())
-            updateRosterUI(fetchedRoster)
+            //fetchTeamRosterDetails(FirebaseFirestore.getInstance(),leagueId,teamId)
+            updateRosterUI(roster)
         }
 
         return view
@@ -239,6 +250,139 @@ class RosterFragment : Fragment() {
 
         return roster.take(13) // Ensure we only return a roster of 13 players
     }
+
+
+    private suspend fun fetchPlayerByIdAndAddToRoster(
+        firestore: FirebaseFirestore,
+        playerID: String,
+        roster: MutableList<Player>
+    ): List<Player> {
+        try {
+            // Fetch the player document by ID
+            val document = firestore.collection("players")
+                .document(playerID)
+                .get()
+                .await()
+
+            // Check if the document exists
+            if (document.exists()) {
+                val longName = document.getString("longName") ?: ""
+                val jerseyNum = document.getString("jerseyNum") ?: ""
+                val pos = document.getString("pos") ?: ""
+                val team = document.getString("team") ?: ""
+                val teamID = document.getString("teamID") ?: ""
+                val nbaComHeadshot = document.getString("nbaComHeadshot") ?: ""
+
+                // Fetching injury details as a map
+                val injuryMap = document.get("Injury") as? Map<String, Any> ?: emptyMap()
+                val designation = injuryMap["status"] as? String
+                val injury = Injury(
+                    injReturnDate = injuryMap["injReturnDate"] as? String,
+                    description = injuryMap["description"] as? String,
+                    injDate = injuryMap["injDate"] as? String,
+                    designation = if (designation.isNullOrEmpty()) "Healthy" else designation
+                )
+
+                // Fetching projections as a map
+                val projectionsMap = document.get("Projections") as? Map<String, Any> ?: emptyMap()
+                val projection = PlayerProjection(
+                    blk = projectionsMap["blk"] as? String ?: "",
+                    mins = projectionsMap["mins"] as? String ?: "",
+                    ast = projectionsMap["ast"] as? String ?: "",
+                    pos = projectionsMap["pos"] as? String ?: "",
+                    teamID = projectionsMap["teamID"] as? String ?: "",
+                    stl = projectionsMap["stl"] as? String ?: "",
+                    TOV = projectionsMap["TOV"] as? String ?: "",
+                    team = projectionsMap["team"] as? String ?: "",
+                    pts = projectionsMap["pts"] as? String ?: "",
+                    reb = projectionsMap["reb"] as? String ?: "",
+                    longName = projectionsMap["longName"] as? String ?: "",
+                    playerID = projectionsMap["playerID"] as? String ?: "",
+                    fantasyPoints = projectionsMap["fantasyPoints"] as? String ?: ""
+                )
+
+                // Fetching stats as a map
+                val statsMap = document.get("TotalStats") as? Map<String, Any> ?: emptyMap()
+                val stats = PlayerStats(
+                    blk = statsMap["blk"] as? String ?: null,
+                    fga = statsMap["fga"] as? String ?: null,
+                    DefReb = statsMap["DefReb"] as? String ?: null,
+                    ast = statsMap["ast"] as? String ?: null,
+                    ftp = statsMap["ftp"] as? String ?: null,
+                    tptfgp = statsMap["tptfgp"] as? String ?: null,
+                    tptfgm = statsMap["tptfgm"] as? String ?: null,
+                    stl = statsMap["stl"] as? String ?: null,
+                    fgm = statsMap["fgm"] as? String ?: null,
+                    pts = statsMap["pts"] as? String ?: null,
+                    reb = statsMap["reb"] as? String ?: null,
+                    fgp = statsMap["fgp"] as? String ?: null,
+                    fta = statsMap["fta"] as? String ?: null,
+                    mins = statsMap["mins"] as? String ?: null,
+                    trueShootingAttempts = statsMap["trueShootingAttempts"] as? String ?: null,
+                    gamesPlayed = statsMap["gamesPlayed"] as? String ?: null,
+                    TOV = statsMap["TOV"] as? String ?: null,
+                    tptfga = statsMap["tptfga"] as? String ?: null,
+                    OffReb = statsMap["OffReb"] as? String ?: null,
+                    ftm = statsMap["ftm"] as? String
+                )
+
+                // Create the Player object
+                val player = Player(
+                    playerID = playerID,
+                    longName = longName,
+                    jerseyNum = jerseyNum,
+                    pos = pos,
+                    team = team,
+                    teamID = teamID,
+                    nbaComHeadshot = nbaComHeadshot,
+                    injury = injury,
+                    stats = stats,
+                    projection = projection
+                )
+
+                // Add the player to the roster
+                roster.add(player)
+            } else {
+                println("Player with ID $playerID does not exist.")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return roster;
+    }
+
+    private suspend fun fetchTeamRosterDetails(
+        firestore: FirebaseFirestore,
+        leagueId: String,
+        teamId: String
+    ) {
+        try {
+            // Fetch the team document
+            val teamDocument = firestore.collection("Leagues")
+                .document(leagueId)
+                .collection("Teams")
+                .document(teamId)
+                .get()
+                .await()
+
+            // Check if the team document exists
+            if (teamDocument.exists()) {
+                // Retrieve the roster array
+                val rosterArray = teamDocument.get("roster") as? List<String> ?: emptyList()
+
+                // Iterate through each player ID in the roster and fetch player details
+                for (playerID in rosterArray) {
+                    //fetchPlayerByIdAndAddToRoster(firestore, playerID)
+                }
+            } else {
+                println("Team document not found for League ID: $leagueId, Team ID: $teamId")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 
 
     private fun updateRosterUI(fetchedRoster: List<Player>) {
