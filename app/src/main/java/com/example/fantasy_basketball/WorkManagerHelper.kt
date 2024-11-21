@@ -26,10 +26,11 @@ object WorkManagerHelper {
             }
         }
     }
-
+/*
     fun scheduleWorkManager(context: Context) {
         val workRequest = PeriodicWorkRequestBuilder<FirestoreWorker>(1, TimeUnit.MINUTES)
             .build()
         WorkManager.getInstance(context).enqueue(workRequest)
     }
+    */
 }

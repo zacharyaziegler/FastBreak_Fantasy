@@ -15,8 +15,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class PlayerDataManager {
 
+class PlayerDataManager {
+/*
     private val db = FirebaseFirestore.getInstance()
 
     // Retrofit setup with the correct API service
@@ -299,8 +300,7 @@ class PlayerDataManager {
             println("Error in fetchAndStoreADP: ${e.message}")
         }
     }
-
-
+    */
 }
 
 

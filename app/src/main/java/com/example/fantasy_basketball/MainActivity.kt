@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity() {
 
 
         // Use the helper class to check permissions and schedule WorkManager
-       // WorkManagerHelper.checkAndRequestNotificationPermission(this)
-       // WorkManagerHelper.scheduleWorkManager(this)
+        //WorkManagerHelper.checkAndRequestNotificationPermission(this)
+        //WorkManagerHelper.scheduleWorkManager(this)
 
 
         val requestPermissionLauncher = registerForActivityResult(
@@ -218,6 +218,14 @@ class MainActivity : AppCompatActivity() {
             ExistingPeriodicWorkPolicy.KEEP,
             playerProjectionsWorkRequest
         )
+    }
+
+    fun showBottomNavigation() {
+        findViewById<BottomNavigationView>(R.id.bottom_navigation)?.visibility = View.VISIBLE
+    }
+
+    fun hideBottomNavigation() {
+        findViewById<BottomNavigationView>(R.id.bottom_navigation)?.visibility = View.GONE
     }
 
 
