@@ -16,6 +16,6 @@
     <item
         android:id="@+id/action_league_settings"
         android:title="League Settings"
-        android:visible="false" /> <!-- Initially hidden, shown only for commissioners -->
+        android:visible="false" />
 
 </menu>
