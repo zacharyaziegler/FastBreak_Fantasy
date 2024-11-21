@@ -159,6 +159,7 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
+
                         R.id.action_league_chat -> {
                             // Navigate to League Chat fragment and pass the leagueId
                             val bundle = Bundle().apply {
@@ -170,19 +171,23 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
-                        findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
-                        true
-                        }
-                        R.id.action_scoreboard -> {
+
+                            R.id.action_scoreboard
+
+                        -> {
                             // Navigate to League Chat fragment and pass the leagueId
                             val bundle = Bundle().apply {
                                 putString("leagueId", leagueId)
                             }
-                            findNavController().navigate(R.id.action_leagueFragment_to_scoreboardFragment, bundle)
+                            findNavController().navigate(
+                                R.id.action_leagueFragment_to_scoreboardFragment,
+                                bundle
+                            )
                             true
                         }
 
                         else -> false
+                    }
                     }
                 }
 
@@ -191,7 +196,7 @@ class LeagueFragment : Fragment() {
             }
         }
 
-    }
+
 
     private fun loadLeagueAndTeamData() {
         val currentUserId = auth.currentUser?.uid ?: return
