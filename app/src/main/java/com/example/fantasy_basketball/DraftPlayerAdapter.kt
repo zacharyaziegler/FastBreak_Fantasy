@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 class DraftPlayerAdapter(
     private var players: List<Player>,
@@ -20,10 +21,23 @@ class DraftPlayerAdapter(
         private val playerName = itemView.findViewById<TextView>(R.id.playerName)
         private val playerFantasyPoints = itemView.findViewById<TextView>(R.id.playerFantasyPoints)
         private val draftButton = itemView.findViewById<Button>(R.id.draftButton)
+        private val playerTeam = itemView.findViewById<TextView>(R.id.playerTeam)
+        private val playerInjury = itemView.findViewById<TextView>(R.id.playerInjuryStatus)
+        private val playerImage = itemView.findViewById<ImageView>(R.id.playerImage)
 
         fun bind(player: Player) {
             playerName.text = player.longName
             playerFantasyPoints.text = player.projection?.fantasyPoints
+            playerTeam.text = player.team
+            playerInjury.text = player.injury?.status
+
+            // Load player image using Glide
+            Glide.with(itemView.context)
+                .load(player.nbaComHeadshot) // Assuming player.imageUrl contains the URL for the player's image
+                .placeholder(R.drawable.ic_player_placeholder) // Placeholder image while loading
+                .error(R.drawable.ic_player_placeholder) // Fallback image if the URL is invalid
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache the image for better performance
+                .into(playerImage)
 
             draftButton.isEnabled = isUserOnTheClock
 
@@ -49,7 +63,7 @@ class DraftPlayerAdapter(
 
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
         if (players.isEmpty()) {
-            // Handle empty list gracefully (optional)
+            // Handle empty list
             Log.e("DraftPlayerAdapter", "No players available to bind")
             return
         }
