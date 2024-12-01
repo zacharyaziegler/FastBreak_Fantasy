@@ -177,8 +177,8 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.playerSearchFragment)
                     true
                 }
-                R.id.ic_proj -> {
-                    navController.navigate(R.id.rosterFragment)
+                R.id.ic_info -> {
+                    navController.navigate(R.id.rulesFragment)
                     true
                 }
                 else -> false
