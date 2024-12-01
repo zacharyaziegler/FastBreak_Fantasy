@@ -29,7 +29,8 @@ data class Player(
 //    @SerializedName("Projections")                // Ensure this matches the Firestore field exactly
     @get:PropertyName("Projections")
     @set:PropertyName("Projections")
-    var projection: PlayerProjection? = null      // Nullable player projection
+    var projection: PlayerProjection? = null,      // Nullable player projection
+    var positionType: String? = null
 ): Parcelable
 
 

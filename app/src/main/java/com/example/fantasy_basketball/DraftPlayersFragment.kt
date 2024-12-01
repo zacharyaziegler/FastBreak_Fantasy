@@ -40,7 +40,7 @@ class DraftPlayersFragment : Fragment() {
     private var draftListenerRegistration: ListenerRegistration? = null
 
     // Configurable pick duration (in seconds)
-    private val PICK_DURATION_SECONDS = 5 // Change to 60 for production
+    private val PICK_DURATION_SECONDS = 20 // Change to 60 for production
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

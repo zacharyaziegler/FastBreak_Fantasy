@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -159,6 +160,7 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
+
                         R.id.action_league_chat -> {
                             // Navigate to League Chat fragment and pass the leagueId
                             val bundle = Bundle().apply {
@@ -170,89 +172,127 @@ class LeagueFragment : Fragment() {
                             )
                             true
                         }
-                        findNavController().navigate(R.id.action_leagueFragment_to_leagueChatFragment, bundle)
-                        true
-                        }
-                        R.id.action_scoreboard -> {
+
+                        R.id.action_scoreboard
+
+                        -> {
                             // Navigate to League Chat fragment and pass the leagueId
                             val bundle = Bundle().apply {
                                 putString("leagueId", leagueId)
                             }
-                            findNavController().navigate(R.id.action_leagueFragment_to_scoreboardFragment, bundle)
+                            findNavController().navigate(
+                                R.id.action_leagueFragment_to_scoreboardFragment,
+                                bundle
+                            )
                             true
                         }
 
                         else -> false
                     }
                 }
-
-                popupMenu.show()
-
             }
-        }
 
+            popupMenu.show()
+
+        }
     }
+
+
 
     private fun loadLeagueAndTeamData() {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        firestore.collection("Leagues").document(leagueId).get().addOnSuccessListener { leagueDoc ->
-            if (leagueDoc.exists()) {
-                val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
-                val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
-                leagueNameTextView.text = leagueName
+        // Load the current team ID and team name
+        firestore.collection("Leagues").document(leagueId).collection("Teams")
+            .whereEqualTo("ownerID", currentUserId).limit(1).get()
+            .addOnSuccessListener { teamsSnapshot ->
+                if (!teamsSnapshot.isEmpty) {
+                    val teamDoc = teamsSnapshot.documents[0]
+                    val teamName = teamDoc.getString("teamName") ?: "Unknown Team"
+                    teamId = teamDoc.id // Initialize teamId
+                    teamNameTextView.text = teamName
 
-                // Only show the RecyclerView if the draft is complete
-                if (draftStatus == "complete") {
-                    recyclerView.visibility = View.VISIBLE
-                    draftMessageTextView.visibility = View.GONE
-
-                    // TODO: Replace placeholder data with actual players on the team once implemented
-                    loadTeamRoster() // Placeholder method for loading actual player data
-
+                    // Once teamId is available, proceed to load league details
+                    loadLeagueDetails()
                 } else {
-                    recyclerView.visibility = View.GONE
-                    draftMessageTextView.visibility = View.VISIBLE
-                    draftMessageTextView.text = "The draft is not complete yet."
+                    teamNameTextView.text = "No Team Found"
+                    Log.e("LeagueFragment", "No team found for the current user in league $leagueId")
                 }
-
-                // Check if draftDateTime is set for countdown
-                val draftTimestamp = leagueDoc.getTimestamp("draftDateTime")
-                if (draftTimestamp == null) {
-                    // Draft date is not set
-                    draftMessageTextView.visibility = View.VISIBLE
-                    enterDraftRoomButton.visibility = View.VISIBLE
-                    enterDraftRoomButton.isEnabled = false
-                } else {
-                    // Draft date is set, hide the message and show countdown
-                    draftMessageTextView.visibility = View.INVISIBLE
-                    enterDraftRoomButton.visibility = View.VISIBLE
-
-                    val draftDateTime = draftTimestamp.toDate()
-                    startCountdown(draftDateTime)
-                }
-
-                // Load team data
-                firestore.collection("Leagues").document(leagueId).collection("Teams")
-                    .whereEqualTo("ownerID", currentUserId).limit(1).get()
-                    .addOnSuccessListener { teamsSnapshot ->
-                        if (!teamsSnapshot.isEmpty) {
-                            val teamDoc = teamsSnapshot.documents[0]
-                            val teamName = teamDoc.getString("teamName") ?: "Unknown Team"
-                            teamId = teamDoc.id
-                            teamNameTextView.text = teamName
-                        } else {
-                            teamNameTextView.text = "No Team Found"
-                        }
-                    }
             }
-        }
+            .addOnFailureListener { exception ->
+                Log.e("LeagueFragment", "Error loading team data: ${exception.message}")
+                Toast.makeText(requireContext(), "Failed to load team data. Please try again.", Toast.LENGTH_SHORT).show()
+            }
     }
+
+    // Function to load league details and optionally the team roster
+    private fun loadLeagueDetails() {
+        firestore.collection("Leagues").document(leagueId).get()
+            .addOnSuccessListener { leagueDoc ->
+                if (leagueDoc.exists()) {
+                    val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+                    val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
+                    leagueNameTextView.text = leagueName
+
+                    // Check if the draft is completed
+                    if (draftStatus == "completed") {
+                        recyclerView.visibility = View.VISIBLE
+                        draftMessageTextView.visibility = View.GONE
+
+                        // Ensure teamId is initialized before loading the roster
+                        if (::teamId.isInitialized && teamId.isNotEmpty()) {
+                            loadTeamRoster() // Load the roster
+                        } else {
+                            Log.e("LeagueFragment", "teamId is not initialized before loading roster.")
+                            Toast.makeText(requireContext(), "Team ID not available. Unable to load roster.", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        recyclerView.visibility = View.GONE
+                        draftMessageTextView.visibility = View.VISIBLE
+                        draftMessageTextView.text = "The draft is not complete yet."
+                    }
+
+                    // Check if draftDateTime is set for countdown
+                    val draftTimestamp = leagueDoc.getTimestamp("draftDateTime")
+                    if (draftTimestamp == null) {
+                        draftMessageTextView.visibility = View.VISIBLE
+                        enterDraftRoomButton.visibility = View.VISIBLE
+                        enterDraftRoomButton.isEnabled = false
+                    } else {
+                        draftMessageTextView.visibility = View.INVISIBLE
+                        enterDraftRoomButton.visibility = View.VISIBLE
+
+                        val draftDateTime = draftTimestamp.toDate()
+                        startCountdown(draftDateTime)
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("LeagueFragment", "Error loading league data: ${exception.message}")
+                Toast.makeText(requireContext(), "Failed to load league data. Please try again.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     private fun loadTeamRoster() {
         // TODO: Implement logic to load actual players on the team from Firestore when available
         Log.d("LeagueFragment", "Loading team roster data...")
+        // Create a bundle to pass the data
+
+        val bundle = Bundle().apply {
+            putString("leagueID", leagueId)
+            putString("teamID", teamId)
+        }
+
+// Create an instance of RosterFragment and pass the data
+        findNavController().navigate(
+            R.id.action_leagueFragment_to_rosterFragment,
+            bundle
+        )
     }
+
+
+
 
     private fun startCountdown(draftDateTime: Date) {
         val currentTime = System.currentTimeMillis()
