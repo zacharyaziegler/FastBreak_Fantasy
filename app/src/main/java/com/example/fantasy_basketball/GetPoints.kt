@@ -252,7 +252,6 @@ private fun incrementWeek(currentWeek: String, callback: (String?) -> Unit) {
         callback("week${String.format("%02d", weekNumber + 1)}")
     } else {
         callback(null) // Return null if already at week19
-    }
-}
+    }}
 
 
