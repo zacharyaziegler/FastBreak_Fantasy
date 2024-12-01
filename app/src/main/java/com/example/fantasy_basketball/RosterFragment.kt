@@ -3,14 +3,21 @@ package com.example.fantasy_basketball
 import RosterAdapter
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -22,29 +29,47 @@ class RosterFragment : Fragment() {
     private lateinit var benchAdapter: RosterAdapter
 
     private val startingLineupSlots = listOf("PG", "SG", "SF", "PF", "C", "G", "F", "UTIL", "UTIL", "UTIL")
-    private val benchLineupSlots = listOf("PG", "SG", "SF", "PF", "C", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL")
-    val roster = mutableListOf<Player>()
+    private val benchLineupSlots = mutableListOf("IR")
+    var roster = mutableListOf<Player?>()
     private val startingLineup = mutableListOf<Player?>(null, null, null, null, null, null, null, null, null, null)
-    private val bench = mutableListOf<Player?>(null, null, null, null, null, null, null, null, null, null)
+    private val bench = mutableListOf<Player?>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_roster, container, false)
 
-
-        // Retrieve the leagueId passed from HomeFragment
-      /*  arguments?.let {
-            leagueId = it.getString("leagueId", "")
-            teamId = it.getString("teamId", "")
-        }*/
-
-        startingLineupAdapter = RosterAdapter(startingLineup, startingLineupSlots) { position, slot ->
-            showPlayerSelectionDialog(position, slot, true)
+        // Retrieve the leagueId and teamId passed from the previous fragment
+        arguments?.let {
+            leagueId = it.getString("leagueID", "")
+            teamId = it.getString("teamID", "")
         }
-        benchAdapter = RosterAdapter(bench, benchLineupSlots) { position, slot ->
-            showPlayerSelectionDialog(position, slot, false)
-        }
+
+// Create the RosterAdapter for starting lineup
+        startingLineupAdapter = RosterAdapter(
+            startingLineup,
+            startingLineupSlots,
+            { position, slot ->
+                showPlayerSelectionDialog(position, slot, true)  // Handling slot selection
+            },
+            { player ->
+                openPlayerProfile(player)  // Handle CardView click here
+            }
+        )
+
+// Create the RosterAdapter for bench lineup
+        benchAdapter = RosterAdapter(
+            bench,
+            benchLineupSlots,
+            { position, slot ->
+                showPlayerSelectionDialog(position, slot, false)  // Handling slot selection
+            },
+            { player ->
+                openPlayerProfile(player)  // Handle CardView click here
+            }
+        )
+
+
 
         view.findViewById<RecyclerView>(R.id.recycler_view_starting_lineup).apply {
             layoutManager = LinearLayoutManager(context)
@@ -57,223 +82,40 @@ class RosterFragment : Fragment() {
         }
 
         // Fetch players for roster upon fragment creation
-        lifecycleScope.launch {
-            val fetchedRoster = fetchRosterWithPositionRequirements(FirebaseFirestore.getInstance())
-            //fetchTeamRosterDetails(FirebaseFirestore.getInstance(),leagueId,teamId)
-            updateRosterUI(roster)
+        lifecycleScope.launch{
+            fetchTeamRosterDetails(FirebaseFirestore.getInstance(), leagueId, teamId)  //gets the players from the roster
+            val (startingPlayers, benchPlayers) = fetchBenchAndStartingPlayers(FirebaseFirestore.getInstance(), leagueId, teamId, roster)
+            updateRosterUI(startingPlayers, benchPlayers)
+
         }
 
         return view
     }
 
-    private suspend fun fetchRosterWithPositionRequirements(firestore: FirebaseFirestore): List<Player> {
-
-        try {
-            // Fetch players to meet each position requirement
-            val primaryPositions = listOf("PG", "SG", "SF", "PF", "C", "G", "F")
-            for (position in primaryPositions) {
-                val positionPlayers = firestore.collection("players")
-                    .whereEqualTo("pos", position)
-                    .limit(2) // Fetch two players per position to ensure diversity
-                    .get()
-                    .await()
-                    .documents // Get the documents instead of using `toObjects` directly
-                    .mapNotNull { document ->
-                        val playerID = document.id
-                        val longName = document.getString("longName") ?: ""
-                        val jerseyNum = document.getString("jerseyNum") ?: ""
-                        val pos = document.getString("pos") ?: ""
-                        val team = document.getString("team") ?: ""
-                        val teamID = document.getString("teamID") ?: ""
-                        val nbaComHeadshot = document.getString("nbaComHeadshot") ?: ""
-
-                        // Fetching injury details as a map
-                        val injuryMap = document.get("Injury") as? Map<String, Any> ?: emptyMap()
-                        val designation = injuryMap["status"] as? String
-                        val injury = Injury(
-                            injReturnDate = injuryMap["injReturnDate"] as? String,
-                            description = injuryMap["description"] as? String,
-                            injDate = injuryMap["injDate"] as? String,
-                            designation = if (designation.isNullOrEmpty()) "Healthy" else designation
-                        )
-
-                        // Fetching projections as a map
-                        val projectionsMap = document.get("Projections") as? Map<String, Any> ?: emptyMap()
-                        val projection = PlayerProjection(
-                            blk = projectionsMap["blk"] as? String ?: "",
-                            mins = projectionsMap["mins"] as? String ?: "",
-                            ast = projectionsMap["ast"] as? String ?: "",
-                            pos = projectionsMap["pos"] as? String ?: "",
-                            teamID = projectionsMap["teamID"] as? String ?: "",
-                            stl = projectionsMap["stl"] as? String ?: "",
-                            TOV = projectionsMap["TOV"] as? String ?: "",
-                            team = projectionsMap["team"] as? String ?: "",
-                            pts = projectionsMap["pts"] as? String ?: "",
-                            reb = projectionsMap["reb"] as? String ?: "",
-                            longName = projectionsMap["longName"] as? String ?: "",
-                            playerID = projectionsMap["playerID"] as? String ?: "",
-                            fantasyPoints = projectionsMap["fantasyPoints"] as? String ?: ""
-                        )
-
-                        // Fetching stats as a map
-                        val statsMap = document.get("TotalStats") as? Map<String, Any> ?: emptyMap()
-                        val stats = PlayerStats(
-                            blk = statsMap["blk"] as? String ?: null,
-                            fga = statsMap["fga"] as? String ?: null,
-                            DefReb = statsMap["DefReb"] as? String ?: null,
-                            ast = statsMap["ast"] as? String ?: null,
-                            ftp = statsMap["ftp"] as? String ?: null,
-                            tptfgp = statsMap["tptfgp"] as? String ?: null,
-                            tptfgm = statsMap["tptfgm"] as? String ?: null,
-                            stl = statsMap["stl"] as? String ?: null,
-                            fgm = statsMap["fgm"] as? String ?: null,
-                            pts = statsMap["pts"] as? String ?: null,
-                            reb = statsMap["reb"] as? String ?: null,
-                            fgp = statsMap["fgp"] as? String ?: null,
-                            fta = statsMap["fta"] as? String ?: null,
-                            mins = statsMap["mins"] as? String ?: null,
-                            trueShootingAttempts = statsMap["trueShootingAttempts"] as? String ?: null,
-                            gamesPlayed = statsMap["gamesPlayed"] as? String ?: null,
-                            TOV = statsMap["TOV"] as? String ?: null,
-                            tptfga = statsMap["tptfga"] as? String ?: null,
-                            OffReb = statsMap["OffReb"] as? String ?: null,
-                            ftm = statsMap["ftm"] as? String
-                        )
-
-                        // Create the Player object
-                        Player(
-                            playerID = playerID,
-                            longName = longName,
-                            jerseyNum = jerseyNum,
-                            pos = pos,
-                            team = team,
-                            teamID = teamID,
-                            nbaComHeadshot = nbaComHeadshot,
-                            injury = injury,
-                            stats = stats,
-                            projection = projection
-                        )
-                    }
-
-                // Add position players to the roster
-                roster.addAll(positionPlayers)
-            }
-
-            // Ensure at least 13 players in the roster
-            if (roster.size < 13) {
-                val additionalPlayers = firestore.collection("players")
-                    .limit((13 - roster.size).toLong())
-                    .get()
-                    .await()
-                    .documents
-                    .mapNotNull { document ->
-                        val playerID = document.id
-                        val longName = document.getString("longName") ?: ""
-                        val jerseyNum = document.getString("jerseyNum") ?: ""
-                        val pos = document.getString("pos") ?: ""
-                        val team = document.getString("team") ?: ""
-                        val teamID = document.getString("teamID") ?: ""
-                        val nbaComHeadshot = document.getString("nbaComHeadshot") ?: ""
-
-                        // Fetching injury details as a map
-                        val injuryMap = document.get("Injury") as? Map<String, Any> ?: emptyMap()
-                        val designation = injuryMap["status"] as? String
-                        val injury = Injury(
-                            injReturnDate = injuryMap["injReturnDate"] as? String,
-                            description = injuryMap["description"] as? String,
-                            injDate = injuryMap["injDate"] as? String,
-                            designation = if (designation.isNullOrEmpty()) "Healthy" else designation
-                        )
-
-                        // Fetching projections as a map
-                        val projectionsMap = document.get("Projections") as? Map<String, Any> ?: emptyMap()
-                        val projection = PlayerProjection(
-                            blk = projectionsMap["blk"] as? String ?: "",
-                            mins = projectionsMap["mins"] as? String ?: "",
-                            ast = projectionsMap["ast"] as? String ?: "",
-                            pos = projectionsMap["pos"] as? String ?: "",
-                            teamID = projectionsMap["teamID"] as? String ?: "",
-                            stl = projectionsMap["stl"] as? String ?: "",
-                            TOV = projectionsMap["TOV"] as? String ?: "",
-                            team = projectionsMap["team"] as? String ?: "",
-                            pts = projectionsMap["pts"] as? String ?: "",
-                            reb = projectionsMap["reb"] as? String ?: "",
-                            longName = projectionsMap["longName"] as? String ?: "",
-                            playerID = projectionsMap["playerID"] as? String ?: "",
-                            fantasyPoints = projectionsMap["fantasyPoints"] as? String ?: ""
-                        )
-
-                        // Fetching stats as a map
-                        val statsMap = document.get("TotalStats") as? Map<String, Any> ?: emptyMap()
-                        val stats = PlayerStats(
-                            blk = statsMap["blk"] as? String ?: null,
-                            fga = statsMap["fga"] as? String ?: null,
-                            DefReb = statsMap["DefReb"] as? String ?: null,
-                            ast = statsMap["ast"] as? String ?: null,
-                            ftp = statsMap["ftp"] as? String ?: null,
-                            tptfgp = statsMap["tptfgp"] as? String ?: null,
-                            tptfgm = statsMap["tptfgm"] as? String ?: null,
-                            stl = statsMap["stl"] as? String ?: null,
-                            fgm = statsMap["fgm"] as? String ?: null,
-                            pts = statsMap["pts"] as? String ?: null,
-                            reb = statsMap["reb"] as? String ?: null,
-                            fgp = statsMap["fgp"] as? String ?: null,
-                            fta = statsMap["fta"] as? String ?: null,
-                            mins = statsMap["mins"] as? String ?: null,
-                            trueShootingAttempts = statsMap["trueShootingAttempts"] as? String ?: null,
-                            gamesPlayed = statsMap["gamesPlayed"] as? String ?: null,
-                            TOV = statsMap["TOV"] as? String ?: null,
-                            tptfga = statsMap["tptfga"] as? String ?: null,
-                            OffReb = statsMap["OffReb"] as? String ?: null,
-                            ftm = statsMap["ftm"] as? String
-                        )
-
-                        // Create the Player object
-                        Player(
-                            playerID = playerID,
-                            longName = longName,
-                            jerseyNum = jerseyNum,
-                            pos = pos,
-                            team = team,
-                            teamID = teamID,
-                            nbaComHeadshot = nbaComHeadshot,
-                            injury = injury,
-                            stats = stats,
-                            projection = projection
-                        )
-                    }
-                roster.addAll(additionalPlayers)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+    private suspend fun fetchPlayerById(
+        firestore: FirebaseFirestore,
+        playerID: String
+    ): Player? {
+        if (playerID.isEmpty()) {
+            // Return null if the playerID is empty
+            return null
         }
 
-        return roster.take(13) // Ensure we only return a roster of 13 players
-    }
-
-
-    private suspend fun fetchPlayerByIdAndAddToRoster(
-        firestore: FirebaseFirestore,
-        playerID: String,
-        roster: MutableList<Player>
-    ): List<Player> {
-        try {
-            // Fetch the player document by ID
+        return try {
             val document = firestore.collection("players")
                 .document(playerID)
                 .get()
                 .await()
 
-            // Check if the document exists
             if (document.exists()) {
-                val longName = document.getString("longName") ?: ""
-                val jerseyNum = document.getString("jerseyNum") ?: ""
-                val pos = document.getString("pos") ?: ""
-                val team = document.getString("team") ?: ""
-                val teamID = document.getString("teamID") ?: ""
+                val longName = document.getString("longName") ?: "Unknown Player"
+                val jerseyNum = document.getString("jerseyNum") ?: "00"
+                val pos = document.getString("pos") ?: "N/A"
+                val team = document.getString("team") ?: "Free Agent"
+                val teamID = document.getString("teamID") ?: "N/A"
                 val nbaComHeadshot = document.getString("nbaComHeadshot") ?: ""
 
-                // Fetching injury details as a map
+                // Parse injury details
                 val injuryMap = document.get("Injury") as? Map<String, Any> ?: emptyMap()
                 val designation = injuryMap["status"] as? String
                 val injury = Injury(
@@ -283,7 +125,7 @@ class RosterFragment : Fragment() {
                     designation = if (designation.isNullOrEmpty()) "Healthy" else designation
                 )
 
-                // Fetching projections as a map
+                // Parse projections
                 val projectionsMap = document.get("Projections") as? Map<String, Any> ?: emptyMap()
                 val projection = PlayerProjection(
                     blk = projectionsMap["blk"] as? String ?: "",
@@ -301,33 +143,33 @@ class RosterFragment : Fragment() {
                     fantasyPoints = projectionsMap["fantasyPoints"] as? String ?: ""
                 )
 
-                // Fetching stats as a map
+                // Parse stats
                 val statsMap = document.get("TotalStats") as? Map<String, Any> ?: emptyMap()
                 val stats = PlayerStats(
-                    blk = statsMap["blk"] as? String ?: null,
-                    fga = statsMap["fga"] as? String ?: null,
-                    DefReb = statsMap["DefReb"] as? String ?: null,
-                    ast = statsMap["ast"] as? String ?: null,
-                    ftp = statsMap["ftp"] as? String ?: null,
-                    tptfgp = statsMap["tptfgp"] as? String ?: null,
-                    tptfgm = statsMap["tptfgm"] as? String ?: null,
-                    stl = statsMap["stl"] as? String ?: null,
-                    fgm = statsMap["fgm"] as? String ?: null,
-                    pts = statsMap["pts"] as? String ?: null,
-                    reb = statsMap["reb"] as? String ?: null,
-                    fgp = statsMap["fgp"] as? String ?: null,
-                    fta = statsMap["fta"] as? String ?: null,
-                    mins = statsMap["mins"] as? String ?: null,
-                    trueShootingAttempts = statsMap["trueShootingAttempts"] as? String ?: null,
-                    gamesPlayed = statsMap["gamesPlayed"] as? String ?: null,
-                    TOV = statsMap["TOV"] as? String ?: null,
-                    tptfga = statsMap["tptfga"] as? String ?: null,
-                    OffReb = statsMap["OffReb"] as? String ?: null,
+                    blk = statsMap["blk"] as? String,
+                    fga = statsMap["fga"] as? String,
+                    DefReb = statsMap["DefReb"] as? String,
+                    ast = statsMap["ast"] as? String,
+                    ftp = statsMap["ftp"] as? String,
+                    tptfgp = statsMap["tptfgp"] as? String,
+                    tptfgm = statsMap["tptfgm"] as? String,
+                    stl = statsMap["stl"] as? String,
+                    fgm = statsMap["fgm"] as? String,
+                    pts = statsMap["pts"] as? String,
+                    reb = statsMap["reb"] as? String,
+                    fgp = statsMap["fgp"] as? String,
+                    fta = statsMap["fta"] as? String,
+                    mins = statsMap["mins"] as? String,
+                    trueShootingAttempts = statsMap["trueShootingAttempts"] as? String,
+                    gamesPlayed = statsMap["gamesPlayed"] as? String,
+                    TOV = statsMap["TOV"] as? String,
+                    tptfga = statsMap["tptfga"] as? String,
+                    OffReb = statsMap["OffReb"] as? String,
                     ftm = statsMap["ftm"] as? String
                 )
 
-                // Create the Player object
-                val player = Player(
+                // Return the Player object
+                Player(
                     playerID = playerID,
                     longName = longName,
                     jerseyNum = jerseyNum,
@@ -339,18 +181,30 @@ class RosterFragment : Fragment() {
                     stats = stats,
                     projection = projection
                 )
-
-                // Add the player to the roster
-                roster.add(player)
             } else {
-                println("Player with ID $playerID does not exist.")
+                null // Player not found
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            null
+        }
+    }
+
+    private fun calculateAndDisplayTotalPoints() {
+        // Calculate total points from the starting lineup
+        val startingTotalPoints = startingLineup.sumOf { player ->
+            player?.projection?.pts?.toDoubleOrNull() ?: 0.0
         }
 
-        return roster;
+        // Total points for the roster
+        val totalPoints = startingTotalPoints
+
+        // Update the UI with the total points
+        view?.findViewById<TextView>(R.id.text_total_points)?.text =
+            totalPoints.toString()
+
     }
+
 
     private suspend fun fetchTeamRosterDetails(
         firestore: FirebaseFirestore,
@@ -358,7 +212,6 @@ class RosterFragment : Fragment() {
         teamId: String
     ) {
         try {
-            // Fetch the team document
             val teamDocument = firestore.collection("Leagues")
                 .document(leagueId)
                 .collection("Teams")
@@ -366,14 +219,16 @@ class RosterFragment : Fragment() {
                 .get()
                 .await()
 
-            // Check if the team document exists
             if (teamDocument.exists()) {
-                // Retrieve the roster array
                 val rosterArray = teamDocument.get("roster") as? List<String> ?: emptyList()
-
-                // Iterate through each player ID in the roster and fetch player details
                 for (playerID in rosterArray) {
-                    //fetchPlayerByIdAndAddToRoster(firestore, playerID)
+                    // Fetch player by ID, set to null if not found
+                    val player = fetchPlayerById(firestore, playerID)
+                    if (player != null) {
+                        roster.add(player)
+                    } else {
+                        roster.add(null)  // Add null if the player is not found
+                    }
                 }
             } else {
                 println("Team document not found for League ID: $leagueId, Team ID: $teamId")
@@ -385,124 +240,333 @@ class RosterFragment : Fragment() {
 
 
 
-    private fun updateRosterUI(fetchedRoster: List<Player>) {
-        // Clear previous data
-        startingLineup.fill(null)
-        bench.fill(null)
 
-        // Update starting lineup and bench
-        for (i in fetchedRoster.indices) {
-            if (i < startingLineup.size) {
-                startingLineup[i] = fetchedRoster[i]
+    private suspend fun fetchBenchAndStartingPlayers(
+        firestore: FirebaseFirestore,
+        leagueId: String,
+        teamId: String,
+        roster: List<Player?>
+    ): Pair<List<Player?>, List<Player>> {
+        return try {
+            val teamDocument = firestore.collection("Leagues")
+                .document(leagueId)
+                .collection("Teams")
+                .document(teamId)
+                .get()
+                .await()
+
+            if (teamDocument.exists()) {
+                val startingPlayerIds = teamDocument.get("Starting") as? List<String> ?: emptyList()
+                val benchPlayerIds = teamDocument.get("Bench") as? List<String> ?: emptyList()
+
+                if (startingPlayerIds.isEmpty() && roster.isNotEmpty()) {
+                    // Populate the starting lineup and bench if Starting is empty
+                    val newStartingPlayers = mutableListOf<Player?>()
+                    val newBenchPlayers = mutableListOf<Player?>()
+
+                    // Allocate players to starting lineup based on position
+                    allocateStartingLineupSlots(roster, newStartingPlayers)
+
+                    // The remainin gplayers after filling starting lineup will go to the bench
+                    val remainingPlayers = roster.filterNot { newStartingPlayers.contains(it) }
+                    newBenchPlayers.addAll(remainingPlayers)
+
+                    // Ensure there is at least one player for each starting slot
+                    fillStartingLineupIfNecessary(newStartingPlayers)
+
+                    // Update Firestore with new Starting and Bench lists
+                    updatePlayerPositionInFirestore("Starting", newStartingPlayers)
+                    updatePlayerPositionInFirestore("Bench", newBenchPlayers)
+                    updateBenchLineupSlots(newBenchPlayers.size)
+
+                    return Pair(newStartingPlayers.filterNotNull(), newBenchPlayers.filterNotNull())
+                } else {
+                    // Use the existing starting and bench data
+                    // Use the existing starting and bench data
+                    val startingPlayers = startingPlayerIds.map { id ->
+                        if (id.isEmpty()) {
+                            null // Explicitly add null for empty player IDs
+                        } else {
+                            roster.find { it?.playerID == id } // Add the matching player or null if not found
+                        }
+                    }
+
+                    val benchPlayers = benchPlayerIds.mapNotNull { id ->
+                        roster.find { it?.playerID == id }
+                    }
+
+                    updateBenchLineupSlots(benchPlayers.size)
+
+                    return Pair(startingPlayers, benchPlayers)
+                }
             } else {
-                bench[i - startingLineup.size] = fetchedRoster[i]
+                println("Team document not found for League ID: $leagueId, Team ID: $teamId")
+                Pair(emptyList(), emptyList())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Pair(emptyList(), emptyList())
+        }
+    }
+
+    private fun allocateStartingLineupSlots(roster: List<Player?>, startingLineup: MutableList<Player?>) {
+        // Fill positions with players that match their respective positions
+        val positions = listOf("PG", "SG", "SF", "PF", "C", "G", "F", "UTIL","UTIL","UTIL")
+        val assignedPlayers = mutableSetOf<Player>() // Track already assigned players
+
+        // Allocate players to starting positions based on available roster
+        for (slot in positions) {
+            val availablePlayer = roster.firstOrNull { player ->
+                player !in assignedPlayers && when (slot) {
+                    "PG" -> player?.pos == "PG"
+                    "SG" -> player?.pos == "SG"
+                    "SF" -> player?.pos == "SF"
+                    "PF" -> player?.pos == "PF"
+                    "C" -> player?.pos == "C"
+                    "G" -> player?.pos == "PG" || player?.pos == "SG"
+                    "F" -> player?.pos == "SF" || player?.pos == "PF"
+                    "UTIL" -> true  // Any player can be assigned to UTIL
+                    "UTIL" -> true
+                    "UTIL" -> true
+                    else -> false
+                }
+            }
+
+            if (availablePlayer != null) {
+                startingLineup.add(availablePlayer)  // Add player to the starting lineup
+                assignedPlayers.add(availablePlayer)  // Mark player as assigned
+            } else {
+                startingLineup.add(null)  // If no player found, keep the slot empty
             }
         }
+    }
 
-        // Notify adapters about the changes
+
+    private fun fillStartingLineupIfNecessary(startingLineup: MutableList<Player?>) {
+        // Ensure that all starting lineup positions are filled
+        val missingSlots = startingLineup.filter { it == null }
+
+        if (missingSlots.isNotEmpty()) {
+            // Filter out the players already assigned to starting lineup
+            val availablePlayers = roster.filterNot { startingLineup.contains(it) }
+
+            // Allocate remaining available players to missing starting lineup slots
+            for (i in startingLineup.indices) {
+                if (startingLineup[i] == null && availablePlayers.isNotEmpty()) {
+                    startingLineup[i] = availablePlayers.first()
+                    // Remove the player from the available players list
+                    availablePlayers.drop(1)
+                }
+            }
+        }
+    }
+
+
+
+    private fun updateBenchLineupSlots(benchSize: Int) {
+        benchLineupSlots.clear()
+        repeat(benchSize) {
+            benchLineupSlots.add("BE") // Add a "BE" slot for each bench player
+        }
+        benchLineupSlots.add("IR") // Add "IR" as the last slot
+        benchAdapter.notifyDataSetChanged() // Notify the adapter to refresh the UI
+    }
+
+
+
+
+
+    private fun updateRosterUI(startingPlayers: List<Player?>, benchPlayers: List<Player>) {
+        // Update Starting Lineup
+        startingLineup.fill(null) // Clear all starting slots
+        var currentSlotIndex = 0
+
+        for ((index, player) in startingPlayers.withIndex()) {
+            if (index < startingLineup.size) {
+                startingLineup[index] = player // Assign player (null or non-null) to the same slot
+            }
+        }
+        calculateAndDisplayTotalPoints()
+        // Update Bench
+        bench.clear()
+        val irPlayer = benchPlayers.find { it.injury?.designation == "OUT" }
+        benchPlayers.filter { it.injury?.designation != "OUT" }.forEach { bench.add(it) }
+
+        // IR Slot Handling
+        benchLineupSlots.clear()
+        benchLineupSlots.addAll(List(bench.size) { "BE" }) // Add BE slots for bench players
+        bench.add(irPlayer) // Add the IR player if available, else null
+        benchLineupSlots.add("IR")
+
+        // Notify Adapters
         startingLineupAdapter.notifyDataSetChanged()
         benchAdapter.notifyDataSetChanged()
     }
+
+
+
     private fun showPlayerSelectionDialog(position: Int, slot: String, isStarting: Boolean) {
-        // Filter eligible players based on slot requirements
         val eligiblePlayers = roster.filter {
             when (slot) {
                 "UTIL" -> true
-                "F" -> it.pos == "SF" || it.pos == "PF"
-                "G" -> it.pos == "PG" || it.pos == "SG"
-                else -> it.pos == slot
+                "F" -> it?.pos == "SF" || it?.pos == "PF"
+                "G" -> it?.pos == "PG" || it?.pos == "SG"
+                "IR" -> it?.injury?.designation == "OUT"
+                "BE" -> true
+                else -> it?.pos == slot
             }
         }
 
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_select_player, null)
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recycler_view_dialog)
 
-        // Create the dialog first before setting up the adapter
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Select Player for $slot")
             .setView(dialogView)
             .setNegativeButton("Cancel", null)
             .create()
 
-        // Initialize the adapter
         val adapter = PlayerSelectionAdapter(eligiblePlayers) { selectedPlayer ->
 
-            // Step 1: Check if the selected player is already in the starting lineup
-            val currentStartingPosition = startingLineup.indexOfFirst { it != null && it.playerID == selectedPlayer.playerID }
+            // Ensure player is in roster before proceeding
+            if (!roster.contains(selectedPlayer)) {
+
+                return@PlayerSelectionAdapter
+            }
+
+            val currentStartingPosition = startingLineup.indexOfFirst { it?.playerID == selectedPlayer?.playerID }
 
             if (currentStartingPosition != -1) {
-                // The selected player is in the starting lineup, remove them from their current slot
                 startingLineup[currentStartingPosition] = null
-                // Clear associated information (picture, team) by notifying the adapter to refresh
                 startingLineupAdapter.notifyItemChanged(currentStartingPosition)
             } else {
-                // Step 2: If the selected player is on the bench, remove them from the bench
-                val currentBenchPosition = bench.indexOfFirst { it?.playerID == selectedPlayer.playerID }
+                val currentBenchPosition = bench.indexOfFirst { it?.playerID == selectedPlayer?.playerID }
                 if (currentBenchPosition != -1) {
-                    // Remove player from bench
-                    bench[currentBenchPosition] = null
-                    // Clear associated information (picture, team) by notifying the adapter to refresh
+                  //  bench[currentBenchPosition] = null
+                    bench.removeAt(currentBenchPosition)
+                    updateBenchLineupSlots(bench.size-1)
                     benchAdapter.notifyItemChanged(currentBenchPosition)
                 }
             }
 
-            // Step 3: Place the selected player into the desired position
             if (isStarting) {
-                // If the player is moved to the starting lineup
                 if (startingLineup[position] != null) {
-                    // Move the player currently in the selected position to the bench
                     movePlayerToBench(startingLineup[position]!!)
                 }
-
-                // Now place the selected player into the starting lineup
                 startingLineup[position] = selectedPlayer
-                startingLineupAdapter.notifyItemChanged(position) // Refresh the starting lineup slot
+                startingLineupAdapter.notifyItemChanged(position)
+                updatePlayerPositionInFirestore("Starting", startingLineup)
             } else {
-                // If the player is moved to the bench
                 if (bench[position] != null) {
-                    // Move the player currently in the selected position on the bench to the starting lineup
                     movePlayerToStartingLineup(bench[position]!!)
                 }
-
-                // Place the selected player into the bench
                 bench[position] = selectedPlayer
-                benchAdapter.notifyItemChanged(position) // Refresh the bench slot
+                benchAdapter.notifyItemChanged(position)
+                updatePlayerPositionInFirestore("Bench", bench)
             }
-
-            // Dismiss the dialog after selecting a player
+            calculateAndDisplayTotalPoints()
             dialog.dismiss()
+
         }
 
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
-
-        // Show the dialog
         dialog.show()
     }
 
-
-
-
-
     private fun movePlayerToBench(player: Player) {
-        // Move player to bench if space is available
-        val benchIndex = bench.indexOfFirst { it == null }
+        // Find the first null slot in the bench excluding the IR slot
+        val benchIndex = bench.subList(0, bench.size - 1).indexOfFirst { it == null }
         if (benchIndex != -1) {
             bench[benchIndex] = player
             benchAdapter.notifyItemChanged(benchIndex)
+        } else {
+            updateBenchLineupSlots(bench.size)
+            // Add a new slot to the bench if no slots are available
+            bench.add(bench.size - 1, player) // Insert before the IR slot
+            benchAdapter.notifyItemInserted(bench.size - 2) // Notify change for newly added slot
         }
+
+        // Find the position of the player in the starting lineup and set that slot to null
+        val startingIndex = startingLineup.indexOfFirst { it?.playerID == player.playerID }
+        if (startingIndex != -1) {
+            startingLineup[startingIndex] = null // Set the starting slot to null
+            startingLineupAdapter.notifyItemChanged(startingIndex) // Notify that the item changed
+        }
+
+        // Update Firestore with the updated bench and starting lineup
+        updatePlayerPositionInFirestore("Bench", bench)
+        updatePlayerPositionInFirestore("Starting", startingLineup) // Make sure the starting lineup is updated with null slot
     }
 
+
+
     private fun movePlayerToStartingLineup(player: Player) {
-        // Move player to starting lineup if space is available
         val startingIndex = startingLineup.indexOfFirst { it == null }
         if (startingIndex != -1) {
             startingLineup[startingIndex] = player
             startingLineupAdapter.notifyItemChanged(startingIndex)
         }
+
+
+        // If a player was removed from the starting lineup, set that slot to null
+        val previousStartingPosition = startingLineup.indexOfFirst { it?.playerID == player.playerID }
+        if (previousStartingPosition != -1 && previousStartingPosition != startingIndex) {
+            startingLineup[previousStartingPosition] = null // Set the slot to null
+            startingLineupAdapter.notifyItemChanged(previousStartingPosition) // Notify that the item changed
+        }
+
+        // Update Firestore with the updated starting lineup
+        updatePlayerPositionInFirestore("Starting", startingLineup)
     }
 
 
+    private fun updatePlayerPositionInFirestore(positionType: String, playerList: List<Player?>) {
+        // Replace null elements with an empty string "" in the playerIds list
+        val playerIds = playerList.map { it?.playerID ?: "" }
+
+        val teamDocumentRef = FirebaseFirestore.getInstance()
+            .collection("Leagues")
+            .document(leagueId)
+            .collection("Teams")
+            .document(teamId)
+
+        // Create a map of data to update based on the position type
+        val updateData = when (positionType) {
+            "Starting" -> mapOf(
+                "Starting" to playerIds, // Set the entire Starting array
+                "Bench" to FieldValue.arrayRemove(*playerIds.toTypedArray()) // Remove from Bench
+            )
+            "Bench" -> mapOf(
+                "Bench" to playerIds, // Set the entire Bench array
+                "Starting" to FieldValue.arrayRemove(*playerIds.toTypedArray()) // Remove from Starting
+            )
+            else -> return // Invalid positionType, exit
+        }
+
+        // Update the document with the new player positions
+        teamDocumentRef.update(updateData)
+            .addOnSuccessListener {
+                println("$positionType updated successfully in Firestore.")
+            }
+            .addOnFailureListener { e ->
+                println("Error updating $positionType in Firestore: ${e.message}")
+            }
+    }
+
+    private fun openPlayerProfile(player: Player?) {
+        val playerProfileFragment = PlayerInfoFragment()
+
+        val bundle = Bundle()
+        bundle.putParcelable("selectedPlayer", player) // Assuming Player class implements Parcelable
+        playerProfileFragment.arguments = bundle
+        findNavController().navigate(R.id.playerInfoFragment, bundle)
+        // Use fragment transaction to navigate
+        /*requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, playerProfileFragment)
+            .addToBackStack(null)
+            .commit()*/
+    }
 
 
 }

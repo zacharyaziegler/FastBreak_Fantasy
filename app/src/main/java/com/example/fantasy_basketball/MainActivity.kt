@@ -3,6 +3,7 @@ package com.example.fantasy_basketball
 
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +18,9 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.gms.tasks.OnCompleteListener
@@ -48,8 +51,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
 
-        scheduleWeeklyPlayerProjectionsWorker()
+        //scheduleWeeklyPlayerProjectionsWorker()
 
+        //scheduleLeagueProcessing()
+        //triggerOneTimeLeagueProcessing()
+
+        //processLeagueMatchups("9bMCw7gJRZrS0b9tQTGo", "week01")
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -177,8 +184,8 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.playerSearchFragment)
                     true
                 }
-                R.id.ic_proj -> {
-                    navController.navigate(R.id.rosterFragment)
+                R.id.ic_info -> {
+                    navController.navigate(R.id.rulesFragment)
                     true
                 }
                 else -> false
@@ -199,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
+/*
 
     private fun scheduleWeeklyPlayerProjectionsWorker() {
         val constraints = Constraints.Builder()
@@ -219,6 +226,49 @@ class MainActivity : AppCompatActivity() {
             playerProjectionsWorkRequest
         )
     }
+
+ */
+
+
+/*
+    fun scheduleLeagueProcessing() {
+        Log.d("MainActivity", "Scheduling league processing triggered")
+
+        val workRequest = PeriodicWorkRequestBuilder<ProcessLeaguesWorker>(7, TimeUnit.DAYS)
+            .setInitialDelay(7, TimeUnit.DAYS)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "ProcessLeaguesWork",
+            androidx.work.ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
+
+ */
+
+
+
+
+/*
+    fun triggerOneTimeLeagueProcessing() {
+        val oneTimeWorkRequest = OneTimeWorkRequestBuilder<ProcessLeaguesWorker>().build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "OneTimeProcessLeaguesWork", // Unique name to prevent duplicate runs
+            ExistingWorkPolicy.REPLACE, // Replace any existing work with the same name
+            oneTimeWorkRequest
+        )
+
+        Log.d("MainActivity", "One-time ProcessLeaguesWorker triggered.")
+    }
+
+ */
+
+
+
+
+
 
     fun showBottomNavigation() {
         findViewById<BottomNavigationView>(R.id.bottom_navigation)?.visibility = View.VISIBLE

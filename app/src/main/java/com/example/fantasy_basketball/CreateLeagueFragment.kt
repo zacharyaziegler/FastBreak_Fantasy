@@ -157,6 +157,8 @@ class CreateLeagueFragment : Fragment() {
                 "teamName" to "Team $i",
                 "ownerID" to if (i == 1) commissionerID else "",  // Assign commissioner to Team 1
                 "roster" to arrayListOf<String>(),
+                "Bench" to arrayListOf<String>(),
+                "Starting" to arrayListOf<String>(),
                 "points" to 0,
                 "leagueID" to leagueID,
                 "wins" to 0,
