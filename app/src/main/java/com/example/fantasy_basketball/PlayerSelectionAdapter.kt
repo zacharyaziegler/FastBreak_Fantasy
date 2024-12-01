@@ -7,15 +7,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class PlayerSelectionAdapter(
-    private val players: List<Player>,
-    private val onPlayerSelected: (Player) -> Unit
+    private val players: List<Player?>,
+    private val onPlayerSelected: (Player?) -> Unit
 ) : RecyclerView.Adapter<PlayerSelectionAdapter.PlayerViewHolder>() {
 
     inner class PlayerViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val playerName: TextView = view.findViewById(R.id.playerName)
 
-        fun bind(player: Player) {
-            playerName.text = player.longName
+        fun bind(player: Player?) {
+            playerName.text = player?.longName
             itemView.setOnClickListener { onPlayerSelected(player) }
         }
     }

@@ -181,7 +181,7 @@ class LeagueSettingsFragment : Fragment() {
         // Calculate pickExpirationTime (60 seconds after draftDateTime)
         val pickExpirationTime = Calendar.getInstance().apply {
             time = draftDateTime
-            add(Calendar.SECOND, 5) //TODO: Change to 60 for prod
+            add(Calendar.SECOND, 20) //TODO: Change to 60 for prod
         }.time
 
         // Update Firestore with draftDateTime, draftStatus, currentPickIndex, and pickExpirationTime

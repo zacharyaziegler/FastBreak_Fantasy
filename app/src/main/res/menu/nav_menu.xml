@@ -15,8 +15,8 @@
         android:icon="@drawable/ic_search"
         android:title="Search"/>
     <item
-        android:id="@+id/ic_proj"
-        android:icon="@drawable/ic_search"
-        android:title="Projection"/>
+        android:id="@+id/ic_info"
+        android:icon="@drawable/baseline_info_24"
+        android:title="Info"/>
 
 </menu>
