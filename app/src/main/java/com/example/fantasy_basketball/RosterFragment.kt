@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -87,6 +88,11 @@ class RosterFragment : Fragment() {
             val (startingPlayers, benchPlayers) = fetchBenchAndStartingPlayers(FirebaseFirestore.getInstance(), leagueId, teamId, roster)
             updateRosterUI(startingPlayers, benchPlayers)
 
+        }
+
+        val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
+        toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack() // Navigate back
         }
 
         return view

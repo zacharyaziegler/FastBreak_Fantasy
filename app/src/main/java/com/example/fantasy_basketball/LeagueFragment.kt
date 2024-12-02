@@ -246,6 +246,7 @@ class LeagueFragment : Fragment() {
                             Log.e("LeagueFragment", "teamId is not initialized before loading roster.")
                             Toast.makeText(requireContext(), "Team ID not available. Unable to load roster.", Toast.LENGTH_SHORT).show()
                         }
+                        return@addOnSuccessListener
                     } else {
                         recyclerView.visibility = View.GONE
                         draftMessageTextView.visibility = View.VISIBLE
