@@ -84,7 +84,7 @@ class HomeFragment : Fragment() {
     private fun fetchUserMatchups() {
         val userId = auth.currentUser?.uid ?: return
         val userRef = firestore.collection("users").document(userId)
-        val currentWeek = "week01" // TODO: Add logic to track which week
+        //val currentWeek = "week01" // TODO: Add logic to track which week
 
         // Fetch user details (leagues and teams)
         userRef.get().addOnSuccessListener { userDocument ->
@@ -93,9 +93,20 @@ class HomeFragment : Fragment() {
                 val teams = userDocument.get("teams") as? List<String> ?: emptyList()
 
                 // Loop through leagues and fetch matchups for each league
-                for ((index, leagueId) in leagues.withIndex()) {
-                    val teamId = teams.getOrNull(index) ?: continue
-                    fetchMatchupForTeam(leagueId, teamId, currentWeek)
+                leagues.forEachIndexed { index, leagueId ->
+                    val teamId = teams.getOrNull(index) ?: return@forEachIndexed
+
+                    // Fetch the current week for the league
+                    firestore.collection("Leagues").document(leagueId)
+                        .get()
+                        .addOnSuccessListener { leagueDoc ->
+                            if (leagueDoc.exists()) {
+                                val currentWeek = leagueDoc.getString("currentWeek") ?: "week01"
+                                fetchMatchupForTeam(leagueId, teamId, currentWeek)
+                            }
+                        }.addOnFailureListener { exception ->
+                            Log.e("HomeFragment", "Error fetching currentWeek for league $leagueId", exception)
+                        }
                 }
             } else {
                 Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()

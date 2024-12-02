@@ -14,6 +14,8 @@ import kotlinx.coroutines.withContext
 import androidx.work.*
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.ParseException
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 
@@ -25,21 +27,19 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 private val api: PlayerAPIService = retrofit.create(PlayerAPIService::class.java)
+private val semaphore = Semaphore(5)
 
 private fun fetchMatchups(leagueId: String, callback: (List<Map<String, Any>>) -> Unit) {
     val db = FirebaseFirestore.getInstance()
     db.collection("Leagues").document(leagueId).collection("Matchups")
         .get()
         .addOnSuccessListener { documents ->
-            val matchups = mutableListOf<Map<String, Any>>()
-            for (document in documents) {
-                matchups.add(
-                    mapOf(
-                        "matchupId" to document.id,
-                        "team1ID" to (document.getString("teamID") ?: ""),
-                        "team2ID" to (document.getString("team2ID") ?: ""),
-                        "week" to (document.getString("week") ?: "")
-                    )
+            val matchups = documents.map { document ->
+                mapOf(
+                    "matchupId" to document.id,
+                    "team1ID" to (document.getString("team1ID") ?: ""),
+                    "team2ID" to (document.getString("team2ID") ?: ""),
+                    "week" to (document.getString("week") ?: "")
                 )
             }
             callback(matchups)
@@ -49,17 +49,13 @@ private fun fetchMatchups(leagueId: String, callback: (List<Map<String, Any>>) -
         }
 }
 
-
 private fun fetchTeamRosters(leagueId: String, callback: (Map<String, List<String>>) -> Unit) {
     val db = FirebaseFirestore.getInstance()
     db.collection("Leagues").document(leagueId).collection("Teams")
         .get()
         .addOnSuccessListener { documents ->
-            val teamRosters = mutableMapOf<String, List<String>>()
-            for (document in documents) {
-                val teamId = document.id
-                val roster = document.get("roster") as? List<String> ?: emptyList()
-                teamRosters[teamId] = roster
+            val teamRosters = documents.associate { document ->
+                document.id to (document.get("roster") as? List<String> ?: emptyList())
             }
             callback(teamRosters)
         }
@@ -68,87 +64,96 @@ private fun fetchTeamRosters(leagueId: String, callback: (Map<String, List<Strin
         }
 }
 
-
 private suspend fun fetchPlayerFantasyPoints(playerID: String): Double {
+    semaphore.acquire()
     return try {
         val response = api.getNBAGamesForPlayer(playerID, "2025", "true")
         if (response.statusCode == 200) {
-            val pastGames = response.body.filterKeys { gameKey ->
+            val gamesData = response.body
+            val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+            val currentDate = Calendar.getInstance()
+            val oneWeekAgo = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
+
+            gamesData.entries.filter { (gameKey, _) ->
                 val gameDateStr = gameKey.substring(0, 8)
-                val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
                 val gameDate = dateFormat.parse(gameDateStr)
-
-                val currentDate = Calendar.getInstance()
-                val oneWeekAgo = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
-
                 gameDate != null && gameDate.after(oneWeekAgo.time) && gameDate.before(currentDate.time)
-            }.mapNotNull { (_, gameData) ->
-                val dataMap = gameData as? Map<String, Any> ?: return@mapNotNull null
-                dataMap["fantasyPoints"]?.toString()?.toDoubleOrNull() ?: 0.0
+            }.sumOf { (_, gameData) ->
+                val statsBody = gameData as? PlayerGameStatsBody
+                statsBody?.fantasyPoints?.toDoubleOrNull() ?: 0.0
             }
-
-            pastGames.sum()
         } else {
-            Log.e("FetchPoints", "Failed for playerID: $playerID, Status: ${response.statusCode}")
+            Log.e("fetchPlayerFantasyPoints", "Failed for playerID: $playerID, Status: ${response.statusCode}")
             0.0
         }
     } catch (e: Exception) {
-        Log.e("FetchPoints", "Error fetching fantasy points for playerID: $playerID", e)
+        Log.e("fetchPlayerFantasyPoints", "Error fetching fantasy points for playerID: $playerID", e)
         0.0
+    } finally {
+        semaphore.release()
     }
 }
 
-
-private suspend fun calculateTeamPoints(teamRosters: Map<String, List<String>>): Map<String, Double> {
-    val teamPoints = mutableMapOf<String, Double>()
-    for ((teamId, roster) in teamRosters) {
-        val teamTotalPoints = roster.sumOf { playerID ->
-            fetchPlayerFantasyPoints(playerID)
-        }
-        teamPoints[teamId] = teamTotalPoints
+private suspend fun calculateTeamPoints(rosters: Map<String, List<String>>): Map<String, Double> {
+    val allPlayerIDs = rosters.values.flatten()
+    val playerPoints = coroutineScope {
+        allPlayerIDs.associateWith { playerID ->
+            async { fetchPlayerFantasyPoints(playerID) }
+        }.mapValues { it.value.await() }
     }
-    return teamPoints
+
+    return rosters.mapValues { (teamID, roster) ->
+        val totalPoints = roster.sumOf { playerPoints[it] ?: 0.0 }
+        Log.d("calculateTeamPoints", "Team $teamID total points: $totalPoints")
+        totalPoints
+    }
 }
 
-
-private fun updateMatchupResult(
+private fun updateMatchupResultsInBatch(
     leagueId: String,
-    matchupId: String,
-    team1ID: String,
-    team1Score: Double,
-    team2ID: String,
-    team2Score: Double
+    results: List<Triple<String, Double, Double>>,
+    teamDetails: List<Pair<String, Pair<String, String>>>
 ) {
     val db = FirebaseFirestore.getInstance()
-    val result: String
+    val batch = db.batch()
 
-    if (team1Score > team2Score) {
-        result = "team1"
-    } else if (team2Score > team1Score) {
-        result = "team2"
-    } else {
-        result = "tie"
+    results.forEachIndexed { index, (matchupId, team1Score, team2Score) ->
+        val result = when {
+            team1Score > team2Score -> "team1"
+            team2Score > team1Score -> "team2"
+            else -> "tie"
+        }
+
+        Log.d("updateMatchupResultsInBatch", "Matchup $matchupId: Team1=$team1Score, Team2=$team2Score, Result=$result")
+
+        val matchupRef = db.collection("Leagues").document(leagueId)
+            .collection("Matchups").document(matchupId)
+
+        batch.update(
+            matchupRef,
+            mapOf(
+                "team1Score" to team1Score,
+                "team2Score" to team2Score,
+                "result" to result
+            )
+        )
+
+        val (team1ID, team2ID) = teamDetails[index].second
+        val teamRef = db.collection("Leagues").document(leagueId).collection("Teams")
+
+        if (result == "team1") {
+            batch.update(teamRef.document(team1ID), "wins", FieldValue.increment(1))
+            batch.update(teamRef.document(team2ID), "losses", FieldValue.increment(1))
+        } else if (result == "team2") {
+            batch.update(teamRef.document(team2ID), "wins", FieldValue.increment(1))
+            batch.update(teamRef.document(team1ID), "losses", FieldValue.increment(1))
+        }
     }
 
-    val matchupRef = db.collection("Leagues").document(leagueId)
-        .collection("Matchups").document(matchupId)
-
-    matchupRef.update(
-        mapOf(
-            "team1Score" to team1Score,
-            "team2Score" to team2Score,
-            "result" to result
-        )
-    )
-
-    val teamRef = db.collection("Leagues").document(leagueId).collection("Teams")
-
-    if (result == "team1") {
-        teamRef.document(team1ID).update("wins", FieldValue.increment(1))
-        teamRef.document(team2ID).update("losses", FieldValue.increment(1))
-    } else if (result == "team2") {
-        teamRef.document(team2ID).update("wins", FieldValue.increment(1))
-        teamRef.document(team1ID).update("losses", FieldValue.increment(1))
+    batch.commit().addOnSuccessListener {
+        Log.d("FirebaseBatch", "Matchup results and team stats updated successfully.")
+    }.addOnFailureListener { e ->
+        Log.e("FirebaseBatch", "Error updating matchup results and team stats", e)
     }
 }
 
@@ -159,24 +164,94 @@ fun processLeagueMatchups(leagueId: String, week: String) {
             matchup["week"] == week
         }
 
-        weeklyMatchups.forEach { matchup ->
-            val matchupId = matchup["matchupId"] as String
-            val team1ID = matchup["team1ID"] as String
-            val team2ID = matchup["team2ID"] as String
+        fetchTeamRosters(leagueId) { teamRosters ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val matchupResults = mutableListOf<Triple<String, Double, Double>>()
+                val teamDetails = mutableListOf<Pair<String, Pair<String, String>>>()
 
-            fetchTeamRosters(leagueId) { teamRosters ->
-                val roster1 = teamRosters[team1ID] ?: emptyList()
-                val roster2 = teamRosters[team2ID] ?: emptyList()
+                weeklyMatchups.forEach { matchup ->
+                    val matchupId = matchup["matchupId"] as String
+                    val team1ID = matchup["team1ID"] as String
+                    val team2ID = matchup["team2ID"] as String
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    val team1Score = calculateTeamPoints(mapOf(team1ID to roster1))[team1ID] ?: 0.0
-                    val team2Score = calculateTeamPoints(mapOf(team2ID to roster2))[team2ID] ?: 0.0
 
-                    withContext(Dispatchers.Main) {
-                        updateMatchupResult(leagueId, matchupId, team1ID, team1Score, team2ID, team2Score)
-                    }
+                    val roster1 = teamRosters[team1ID] ?: emptyList()
+                    val roster2 = teamRosters[team2ID] ?: emptyList()
+
+                    Log.d("processLeagueMatchups", "Calculating points for matchup $matchupId")
+                    Log.d("processLeagueMatchups", "Team1 ($team1ID) roster: $roster1")
+                    Log.d("processLeagueMatchups", "Team2 ($team2ID) roster: $roster2")
+
+
+                    val teamScores = calculateTeamPoints(
+                        mapOf(team1ID to roster1, team2ID to roster2)
+                    )
+
+                    val team1Score = teamScores[team1ID] ?: 0.0
+                    val team2Score = teamScores[team2ID] ?: 0.0
+
+                    Log.d("processLeagueMatchups", "Team1 ($team1ID) score: $team1Score")
+                    Log.d("processLeagueMatchups", "Team2 ($team2ID) score: $team2Score")
+
+
+                    matchupResults.add(Triple(matchupId, team1Score, team2Score))
+                    teamDetails.add(Pair(matchupId, Pair(team1ID, team2ID)))
+                }
+
+                withContext(Dispatchers.Main) {
+                    updateMatchupResultsInBatch(leagueId, matchupResults, teamDetails)
                 }
             }
         }
     }
 }
+
+fun processAllLeaguesForWeek() {
+    val db = FirebaseFirestore.getInstance()
+
+    db.collection("Leagues")
+        .get()
+        .addOnSuccessListener { leagues ->
+            leagues.forEach { league ->
+                val leagueId = league.id
+                val currentWeek = league.getString("currentWeek") ?: "week01"
+                val draftStatus = league.getString("draftStatus") ?: ""
+
+                Log.d("processAllLeaguesForWeek", "Processing league $leagueId for week $currentWeek with draftStatus $draftStatus")
+
+                if (draftStatus == "completed") {
+                    processLeagueMatchups(leagueId, currentWeek)
+
+                    incrementWeek(currentWeek) { nextWeek ->
+                        if (nextWeek != null) {
+                            db.collection("Leagues").document(leagueId)
+                                .update("currentWeek", nextWeek)
+                                .addOnSuccessListener {
+                                    Log.d("processAllLeaguesForWeek", "Updated league $leagueId to week $nextWeek")
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e("processAllLeaguesForWeek", "Error updating week for league $leagueId", e)
+                                }
+                        } else {
+                            Log.d("processAllLeaguesForWeek", "League $leagueId has reached the final week.")
+                        }
+                    }
+                } else {
+                    Log.d("processAllLeaguesForWeek", "Skipping league $leagueId as draft is not completed.")
+                }
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("processAllLeaguesForWeek", "Error fetching leagues", e)
+        }
+}
+
+private fun incrementWeek(currentWeek: String, callback: (String?) -> Unit) {
+    val weekNumber = currentWeek.removePrefix("week").toIntOrNull()
+    if (weekNumber != null && weekNumber < 19) {
+        callback("week${String.format("%02d", weekNumber + 1)}")
+    } else {
+        callback(null) // Return null if already at week19
+    }}
+
+
