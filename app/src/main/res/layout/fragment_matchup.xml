@@ -66,11 +66,13 @@
                         android:id="@+id/userTeamName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="8dp"
                         android:text="My Team Name"
                         android:textSize="16sp"
-                        android:gravity="center_horizontal"
-                        android:textStyle="bold"
-                        android:paddingTop="8dp" />
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <!-- Center: "Versus" text -->
@@ -104,6 +106,8 @@
                         android:id="@+id/opponentTeamName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="Opponent Team Name"
                         android:textSize="16sp"
                         android:gravity="center_horizontal"

@@ -7,7 +7,7 @@
     android:padding="16dp"
     android:gravity="top"
     android:layout_gravity="center"
-    android:background="?android:attr/windowBackground">
+    android:background="@color/background">
 
     <!-- League Name Section -->
     <TextView
