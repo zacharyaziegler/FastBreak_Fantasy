@@ -3,82 +3,90 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/background">
 
     <!-- Box for draft pick details -->
     <LinearLayout
         android:id="@+id/draftPickInfoContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="@android:color/darker_gray"
         android:layout_marginBottom="8dp"
-        android:elevation="4dp">
+        android:background="@color/button_color"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:padding="16dp">
 
         <!-- Countdown Timer -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_gravity="center_vertical"
-            android:layout_marginEnd="16dp">
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/countdownTimer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="60s"
+                android:textColor="@color/button_text_color"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:gravity="center" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/roundPickInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="Round 1 Pick 1"
-                android:textSize="14sp"
-                android:textColor="@android:color/white"
-                android:gravity="center" />
+                android:textColor="@color/button_text_color"
+                android:textSize="14sp" />
         </LinearLayout>
 
         <!-- Divider -->
         <View
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:background="@android:color/white"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="16dp"
+            android:background="@android:color/white" />
 
         <!-- Current team on the clock -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_vertical">
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/onTheClockLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="On The Clock:"
+                android:textColor="@color/button_text_color"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/currentTeamName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="Team 1"
-                android:textSize="16sp"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="4dp" />
+                android:textColor="@color/button_text_color"
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 
     <!-- RecyclerView for players -->
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="     Player                                                 Projected Points" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewPlayers"
         android:layout_width="match_parent"

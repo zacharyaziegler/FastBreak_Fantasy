@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".LeagueSettingsFragment">
 
     <!-- Toolbar with hamburger menu and league name -->
@@ -35,28 +35,28 @@
         android:id="@+id/draftSettingsHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
         android:text="Draft Settings"
+        android:textColor="?android:textColorSecondary"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="?android:textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/leagueName"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="16dp" />
+        app:layout_constraintTop_toBottomOf="@id/leagueName" />
 
     <!-- Draft Settings Section -->
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:cardElevation="4dp"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toBottomOf="@id/draftSettingsHeader"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/draftSettingsHeader">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,41 +70,40 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Select Draft Date"
-                android:textSize="16sp"
-                android:textColor="?android:textColorSecondary" />
+                android:textColor="?android:textColorSecondary"
+                android:textSize="16sp" />
 
             <EditText
                 android:id="@+id/draftDateEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="MM/DD/YYYY"
-                android:focusable="false"
-                android:clickable="true"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/edittext_background"
-                android:padding="10dp"
-                android:layout_marginTop="8dp" />
+                android:clickable="true"
+                android:focusable="false"
+                android:hint="MM/DD/YYYY"
+                android:padding="10dp" />
 
             <!-- Select Draft Time Label and EditText -->
             <TextView
                 android:id="@+id/selectDraftTimeLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Draft Time"
-                android:textSize="16sp"
                 android:layout_marginTop="16dp"
-                android:textColor="?android:textColorSecondary" />
+                android:text="Select Draft Time"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="16sp" />
 
             <EditText
                 android:id="@+id/draftTimeEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="HH:MM"
-                android:focusable="false"
-                android:clickable="true"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/edittext_background"
-                android:padding="10dp"
-                android:layout_marginTop="8dp" />
-
+                android:clickable="true"
+                android:focusable="false"
+                android:hint="HH:MM"
+                android:padding="10dp" />
 
 
             <!-- Set Draft Button -->
@@ -112,9 +111,9 @@
                 android:id="@+id/setDraftButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:text="Set Draft"
-                android:textSize="16sp"
-                android:layout_marginTop="24dp" />
+                android:textSize="16sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

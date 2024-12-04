@@ -37,23 +37,24 @@
                 android:layout_height="wrap_content"
                 android:text="Player Name"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="@color/text_color"/>
 
             <TextView
                 android:id="@+id/playerPosition"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Position"
-                android:textSize="14sp"
-                android:textColor="#777" />
+                android:textColor="@color/text_color"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/playerTeam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Team Abbr"
-                android:textSize="14sp"
-                android:textColor="#777" />
+                android:textColor="@color/text_color"
+                android:textSize="14sp" />
 
             <!-- Injury Status -->
             <TextView
@@ -77,18 +78,18 @@
                 android:id="@+id/playerFantasyPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="111.22"
-                android:textSize="14sp"
-                android:textColor="#333"
-                android:layout_marginEnd="8dp" />
+                android:textColor="@color/text_color"
+                android:textSize="14sp" />
 
             <!-- Draft Button -->
             <Button
                 android:id="@+id/draftButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:backgroundTint="@color/button_color"
                 android:text="Draft"
-                android:backgroundTint="@color/purple_500"
                 android:textColor="@android:color/white" />
         </LinearLayout>
     </LinearLayout>

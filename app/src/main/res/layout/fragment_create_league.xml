@@ -13,10 +13,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="LEAGUE NAME"
-        android:textStyle="bold"
+        android:textColor="@color/text_color"
         android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/leagueNameEditText"
@@ -28,11 +29,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LEAGUE SIZE"
-        android:textStyle="bold"
-        android:textSize="16sp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"
+        android:text="LEAGUE SIZE"
+        android:textColor="@color/text_color"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <!-- Horizontal ScrollView for Radio Buttons -->
     <HorizontalScrollView
@@ -63,11 +65,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SCORING TYPE"
-        android:textStyle="bold"
-        android:textSize="16sp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"
+        android:text="SCORING TYPE"
+        android:textColor="@color/text_color"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <!-- Active Scoring Type (Head to Head Points) -->
     <RadioButton
@@ -94,7 +97,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
+        android:backgroundTint="@color/button_color"
         android:text="Create League"
+        android:textColor="@color/button_text_color"
         android:textStyle="bold" />
 
     <ProgressBar
