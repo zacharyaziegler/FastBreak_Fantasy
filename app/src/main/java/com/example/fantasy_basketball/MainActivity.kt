@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         //scheduleLeagueProcessing()
         //triggerOneTimeLeagueProcessing()
 
-        //processLeagueMatchups("9bMCw7gJRZrS0b9tQTGo", "week01")
+        //processLeagueMatchups("g11QJdRoaR7WhJIuya3A", "week01")
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
 
 
-        //navController.navigate(R.id.playerProjectionsFragment)
+       // navController.navigate(R.id.scoreboardFragment)
 
 /*
         lifecycleScope.launch {
@@ -145,6 +145,7 @@ class MainActivity : AppCompatActivity() {
         }
 
  */
+
 
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
@@ -159,6 +160,8 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.loginFragment)
 
         }
+
+
 
 
 
@@ -185,7 +188,11 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.ic_info -> {
-                    navController.navigate(R.id.rulesFragment)
+                    navController.navigate(R.id.scoreboardFragment)//R.id.rulesFragment
+                    true
+                }
+                R.id.ic_home -> {
+                    navController.navigate(R.id.scoreboardFragment)
                     true
                 }
                 else -> false
@@ -264,6 +271,8 @@ class MainActivity : AppCompatActivity() {
     }
 
  */
+
+
 
 
 
