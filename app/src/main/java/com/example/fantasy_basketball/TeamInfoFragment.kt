@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -21,6 +22,7 @@ class TeamInfoFragment : Fragment() {
     private lateinit var teamImageView: ImageView
     private lateinit var teamNameTextView: TextView
     private lateinit var editTeamButton: Button
+    private lateinit var toolbar: Toolbar
 
     private var currentTeamName: String = ""
     private var currentProfilePictureUrl: String = ""
@@ -44,12 +46,16 @@ class TeamInfoFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_team_info, container, false)
 
         // Initialize views
+        toolbar = view.findViewById(R.id.teamInfoToolbar)
         teamImageView = view.findViewById(R.id.teamImageView)
         teamNameTextView = view.findViewById(R.id.teamNameTextView)
         editTeamButton = view.findViewById(R.id.editTeamButton)
 
         // Load team data
         loadTeamData()
+
+        // Set up the toolbar
+        setupToolbar()
 
         // Handle button click to navigate to EditTeamInfoFragment
         editTeamButton.setOnClickListener {
@@ -63,6 +69,16 @@ class TeamInfoFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun setupToolbar() {
+        toolbar.setNavigationOnClickListener {
+            // Navigate directly to the LeagueFragment and pass the leagueId
+            val bundle = Bundle().apply {
+                putString("leagueId", leagueId)
+            }
+            findNavController().navigate(R.id.action_teamInfoFragment_to_leagueFragment, bundle)
+        }
     }
 
     private fun loadTeamData() {
