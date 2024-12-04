@@ -37,7 +37,7 @@ class ScoreboardPlayerAdapter(
         val teamBPlayer = teamBPlayers.getOrNull(position)
 
         holder.teamAPlayerName.text = teamAPlayer?.longName ?: "N/A"
-        holder.teamAPlayerPoints.text = teamAPlayer?.stats?.pts ?: "0.0"
+        holder.teamAPlayerPoints.text = teamAPlayer?.projection?.fantasyPoints ?: "0.0"
         holder.teamAPlayerTeam.text = teamAPlayer?.team ?: "N/A"
         Glide.with(holder.itemView.context)
             .load(teamAPlayer?.nbaComHeadshot ?: "")
@@ -47,7 +47,7 @@ class ScoreboardPlayerAdapter(
         holder.playerPosition.text = teamAPlayer?.pos ?: teamBPlayer?.pos ?: "N/A"
 
         holder.teamBPlayerName.text = teamBPlayer?.longName ?: "N/A"
-        holder.teamBPlayerPoints.text = teamBPlayer?.stats?.pts ?: "0.0"
+        holder.teamBPlayerPoints.text = teamBPlayer?.projection?.fantasyPoints ?: "0.0"
         holder.teamBPlayerTeam.text = teamBPlayer?.team ?: "N/A"
         Glide.with(holder.itemView.context)
             .load(teamBPlayer?.nbaComHeadshot ?: "")

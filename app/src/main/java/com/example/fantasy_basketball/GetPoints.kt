@@ -55,7 +55,7 @@ private fun fetchTeamRosters(leagueId: String, callback: (Map<String, List<Strin
         .get()
         .addOnSuccessListener { documents ->
             val teamRosters = documents.associate { document ->
-                document.id to (document.get("roster") as? List<String> ?: emptyList())
+                document.id to (document.get("starting") as? List<String> ?: emptyList())
             }
             callback(teamRosters)
         }
