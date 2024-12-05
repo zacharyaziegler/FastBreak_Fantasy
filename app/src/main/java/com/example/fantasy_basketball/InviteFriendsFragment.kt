@@ -28,6 +28,7 @@ class InviteFriendsFragment : Fragment() {
             leagueName = it.getString("leagueName", "")
         }
         leagueName = sharedViewModel.leagueName.toString()
+        inviteCode = sharedViewModel.inviteCode.toString()
 
 
 

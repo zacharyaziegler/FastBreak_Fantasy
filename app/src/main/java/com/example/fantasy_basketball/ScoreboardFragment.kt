@@ -7,9 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
-
 import androidx.fragment.app.activityViewModels
-
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,15 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ScoreboardFragment : Fragment() {
 
-
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var weekSpinner: Spinner
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ScoreboardPlayerAdapter
-    private val sharedViewModel: SharedDataViewModel by activityViewModels()
-    private var leagueId: String? = null
-    private var selectedWeek: String = "week01" // Default week
-
     private lateinit var matchupsRecyclerView: RecyclerView
     private lateinit var playerRecyclerView: RecyclerView
     private lateinit var matchupsAdapter: MatchupsAdapter
@@ -38,25 +27,26 @@ class ScoreboardFragment : Fragment() {
     private val matchupsList = mutableListOf<FullMatchup>() // Store all matchups for the week
     private val teamAPlayers = mutableListOf<Player>()
     private val teamBPlayers = mutableListOf<Player>()
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
+    private var leagueId: String? = "g11QJdRoaR7WhJIuya3A"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_scoreboard, container, false)
-
-
-        // Fetch the leagueId from arguments
         /*
-        leagueId = arguments?.getString("leagueId") ?: run {
-            Log.e("ScoreboardFragment", "leagueId argument is missing")
-            return view
-        }
+
+                leagueId = arguments?.getString("leagueId") ?: run {
+                    Log.e("ScoreboardFragment", "leagueId argument is missing")
+                    return view
+                }
+
 
          */
 
-        leagueId = "g11QJdRoaR7WhJIuya3A"
+
+        leagueId = sharedViewModel.leagueID
         Log.d("ScoreboardFragment", "League ID: $leagueId")
 
         setupMatchupsRecyclerView(view)
@@ -241,9 +231,36 @@ class ScoreboardFragment : Fragment() {
                             playerID = doc.id,
                             longName = doc.getString("longName") ?: "Unknown",
                             pos = positionOrder.getOrNull(index) ?: "UTIL",
-                            stats = PlayerStats(
-                                pts = (doc.get("TotalStats") as? Map<*, *>)?.get("pts")?.toString() ?: "0.0"
-                            ),
+                            projection = doc.get("Projections")?.let { projections ->
+                                val projectionsMap = projections as Map<*, *>
+                                PlayerProjection(
+                                    fantasyPoints = projectionsMap["fantasyPoints"]?.toString() ?: "0.0",
+                                    pts = projectionsMap["pts"]?.toString() ?: "0.0",
+                                    reb = projectionsMap["reb"]?.toString() ?: "0.0",
+                                    ast = projectionsMap["ast"]?.toString() ?: "0.0",
+                                    stl = projectionsMap["stl"]?.toString() ?: "0.0",
+                                    blk = projectionsMap["blk"]?.toString() ?: "0.0",
+                                    TOV = projectionsMap["TOV"]?.toString() ?: "0.0"
+                                )
+                            },
+                            injury = doc.get("Injury")?.let { injury ->
+                                val injuryMap = injury as Map<*, *>
+                                Injury(
+                                    status = injuryMap["status"]?.toString(),
+                                    description = injuryMap["description"]?.toString()
+                                )
+                            },
+                            stats = doc.get("TotalStats")?.let { stats ->
+                                val statsMap = stats as Map<*, *>
+                                PlayerStats(
+                                    pts = statsMap["pts"]?.toString() ?: "0.0",
+                                    reb = statsMap["reb"]?.toString() ?: "0.0",
+                                    ast = statsMap["ast"]?.toString() ?: "0.0",
+                                    stl = statsMap["stl"]?.toString() ?: "0.0",
+                                    blk = statsMap["blk"]?.toString() ?: "0.0",
+                                    TOV = statsMap["TOV"]?.toString() ?: "0.0"
+                                )
+                            },
                             team = doc.getString("team") ?: "",
                             nbaComHeadshot = doc.getString("nbaComHeadshot") ?: ""
                         )
@@ -269,6 +286,7 @@ class ScoreboardFragment : Fragment() {
                 Log.e("fetchPlayersForLineup", "Error fetching players", exception)
             }
     }
+
 
 
 
