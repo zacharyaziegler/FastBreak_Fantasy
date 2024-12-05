@@ -1,184 +1,280 @@
 package com.example.fantasy_basketball
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ScoreboardFragment : Fragment() {
 
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var weekSpinner: Spinner
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ScoreboardPlayerAdapter
+    private lateinit var matchupsRecyclerView: RecyclerView
+    private lateinit var playerRecyclerView: RecyclerView
+    private lateinit var matchupsAdapter: MatchupsAdapter
+    private lateinit var playerAdapter: ScoreboardPlayerAdapter
     private val sharedViewModel: SharedDataViewModel by activityViewModels()
-    private var leagueId: String? = null
-    private var selectedWeek: String = "week01" // Default week
+    private val matchupsList = mutableListOf<FullMatchup>() // Store all matchups for the week
+    private val teamAPlayers = mutableListOf<Player>()
+    private val teamBPlayers = mutableListOf<Player>()
 
-    // Dummy data for testing
-    private val teamAPlayers = listOf(
-        Player(
-            playerID = "101",
-            longName = "LeBron James",
-            pos = "SF",
-            stats = PlayerStats(pts = "27.8")
-        ),
-        Player(
-            playerID = "102",
-            longName = "Anthony Davis",
-            pos = "PF",
-            stats = PlayerStats(pts = "24.1")
-        ),
-        Player(
-            playerID = "103",
-            longName = "Russell Westbrook",
-            pos = "PG",
-            stats = PlayerStats(pts = "19.6")
-        )
-    )
-
-    private val teamBPlayers = listOf(
-        Player(
-            playerID = "201",
-            longName = "Stephen Curry",
-            pos = "PG",
-            stats = PlayerStats(pts = "30.2")
-        ),
-        Player(
-            playerID = "202",
-            longName = "Klay Thompson",
-            pos = "SG",
-            stats = PlayerStats(pts = "22.3")
-        ),
-        Player(
-            playerID = "203",
-            longName = "Draymond Green",
-            pos = "PF",
-            stats = PlayerStats(pts = "10.5")
-        )
-    )
+    private var leagueId: String? = "g11QJdRoaR7WhJIuya3A"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_scoreboard, container, false)
-        firestore = FirebaseFirestore.getInstance()
 
-        // Retrieve leagueId from arguments
-        leagueId = arguments?.getString("leagueId")
-        leagueId = sharedViewModel.leagueID
-        // Initialize Spinner
-        weekSpinner = view.findViewById(R.id.weekSpinner)
-        setupWeekSpinner()
-
-        // Initialize RecyclerView
-        recyclerView = view.findViewById(R.id.playerMatchupRecyclerView)
-        adapter = ScoreboardPlayerAdapter(teamAPlayers, teamBPlayers)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = adapter
-
-        // Fetch matchup details for the default week
-        if (leagueId != null) {
-            fetchMatchupDetails(view)
-        } else {
-            Toast.makeText(requireContext(), "League ID is missing.", Toast.LENGTH_SHORT).show()
+        // Fetch the leagueId from arguments
+        /*
+        leagueId = arguments?.getString("leagueId") ?: run {
+            Log.e("ScoreboardFragment", "leagueId argument is missing")
+            return view
         }
+
+         */
+
+        leagueId = "g11QJdRoaR7WhJIuya3A"
+        Log.d("ScoreboardFragment", "League ID: $leagueId")
+
+        setupMatchupsRecyclerView(view)
+        setupPlayerRecyclerView(view)
+
+        fetchLeagueCurrentWeek()
 
         return view
     }
 
-    private fun setupWeekSpinner() {
-        // Fetch available weeks dynamically
-        firestore.collection("Leagues")
-            .document(leagueId!!)
-            .collection("Matchups")
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val weeks = querySnapshot.documents.mapNotNull { it.getString("week") }.distinct()
-                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, weeks)
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                weekSpinner.adapter = adapter
+    private fun setupMatchupsRecyclerView(view: View) {
+        matchupsRecyclerView = view.findViewById(R.id.matchupsRecyclerView)
+        matchupsAdapter = MatchupsAdapter(matchupsList) { fullMatchup ->
+            Log.d("ScoreboardFragment", "Matchup clicked: ${fullMatchup.matchup.matchupId}")
+            displayPlayersForMatchup(fullMatchup.matchup)
+        }
+        matchupsRecyclerView.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        matchupsRecyclerView.adapter = matchupsAdapter
 
-                // Set default selection
-                weekSpinner.setSelection(0)
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(matchupsRecyclerView)
 
-                // Listen for selection changes
-                weekSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        selectedWeek = weeks[position]
-                        fetchMatchupDetails(requireView())
-                    }
+        matchupsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val snappedView = snapHelper.findSnapView(layoutManager)
+                    val position = layoutManager.getPosition(snappedView ?: return)
 
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        // Do nothing
+                    if (position in matchupsList.indices) {
+                        Log.d("ScoreboardFragment", "Scrolled to matchup at position: $position")
+                        displayPlayersForMatchup(matchupsList[position].matchup)
                     }
                 }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Error fetching weeks: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        })
     }
 
-    private fun fetchMatchupDetails(view: View) {
-        firestore.collection("Leagues")
-            .document(leagueId!!)
-            .collection("Matchups")
-            .whereEqualTo("week", selectedWeek)
-            .limit(1)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    val matchup = querySnapshot.documents[0]
-                    val team1Id = matchup.getString("team1ID") ?: return@addOnSuccessListener
-                    val team2Id = matchup.getString("team2ID") ?: return@addOnSuccessListener
+    private fun setupPlayerRecyclerView(view: View) {
+        playerRecyclerView = view.findViewById(R.id.playerMatchupRecyclerView)
+        playerAdapter = ScoreboardPlayerAdapter(
+            teamAPlayers,
+            teamBPlayers
+        ) { selectedPlayer ->
+            Log.d("ScoreboardFragment", "Player clicked: ${selectedPlayer.longName}")
+            openPlayerProfile(selectedPlayer)
+        }
+        playerRecyclerView.layoutManager = LinearLayoutManager(context)
+        playerRecyclerView.adapter = playerAdapter
+    }
 
-                    // Fetch team details for both teams
-                    fetchTeamDetails(view, team1Id, isTeam1 = true)
-                    fetchTeamDetails(view, team2Id, isTeam1 = false)
+    private fun fetchLeagueCurrentWeek() {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Leagues").document(leagueId!!).get()
+            .addOnSuccessListener { document ->
+                val currentWeek = document.getString("currentWeek")
+                Log.d("fetchLeagueCurrentWeek", "Current week: $currentWeek")
+                if (currentWeek != null) {
+                    fetchMatchupsForWeek(currentWeek)
                 } else {
-                    Toast.makeText(requireContext(), "No matchup found for this week.", Toast.LENGTH_SHORT).show()
+                    Log.e("ScoreboardFragment", "No current week found for league.")
                 }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Error fetching matchup: ${e.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { exception ->
+                Log.e("fetchLeagueCurrentWeek", "Error fetching current week", exception)
             }
     }
 
-    private fun fetchTeamDetails(view: View, teamId: String, isTeam1: Boolean) {
-        firestore.collection("Leagues")
-            .document(leagueId!!)
-            .collection("Teams")
-            .document(teamId)
+    private fun fetchMatchupsForWeek(currentWeek: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Leagues").document(leagueId!!).collection("Matchups")
+            .whereEqualTo("week", currentWeek)
             .get()
-            .addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val teamName = documentSnapshot.getString("teamName") ?: "Unknown"
-                    val teamImageUrl = documentSnapshot.getString("profilePictureUrl") ?: ""
+            .addOnSuccessListener { documents ->
+                matchupsList.clear()
+                Log.d("fetchMatchupsForWeek", "Matchups found: ${documents.size()}")
+                val matchups = documents.map { doc ->
+                    Log.d("fetchMatchupsForWeek", "Matchup: ${doc.data}")
+                    Matchup(
+                        matchupId = doc.id,
+                        team1ID = doc.getString("team1ID") ?: "",
+                        team2ID = doc.getString("team2ID") ?: "",
+                        week = doc.getString("week") ?: ""
+                    )
+                }
+                fetchTeamDetailsForMatchups(matchups)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("fetchMatchupsForWeek", "Error fetching matchups", exception)
+            }
+    }
 
-                    if (isTeam1) {
-                        view.findViewById<TextView>(R.id.team1Name).text = teamName
-                        Glide.with(this).load(teamImageUrl).into(view.findViewById(R.id.team1Image))
+    private fun fetchTeamDetailsForMatchups(matchups: List<Matchup>) {
+        val db = FirebaseFirestore.getInstance()
+        val teamsCollection = db.collection("Leagues").document(leagueId!!).collection("Teams")
+        val fullMatchups = mutableListOf<FullMatchup>()
+        val teamIds = matchups.flatMap { listOf(it.team1ID, it.team2ID) }.distinct()
+
+        teamsCollection.whereIn(FieldPath.documentId(), teamIds)
+            .get()
+            .addOnSuccessListener { teamDocuments ->
+                val teamDetails = teamDocuments.associateBy({ it.id }, { doc ->
+                    Log.d("fetchTeamDetails", "Team: ${doc.id} -> ${doc.data}")
+                    TeamDetails(
+                        name = doc.getString("teamName") ?: "Unknown",
+                        logo = doc.getString("profilePictureUrl") ?: ""
+                    )
+                })
+
+                fullMatchups.addAll(matchups.map { matchup ->
+                    FullMatchup(
+                        matchup = matchup,
+                        team1Details = teamDetails[matchup.team1ID],
+                        team2Details = teamDetails[matchup.team2ID]
+                    )
+                })
+
+                Log.d("fetchTeamDetails", "Full matchups: $fullMatchups")
+                matchupsList.clear()
+                matchupsList.addAll(fullMatchups)
+                matchupsAdapter.notifyDataSetChanged()
+
+                if (fullMatchups.isNotEmpty()) {
+                    displayPlayersForMatchup(fullMatchups[0].matchup)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("fetchTeamDetailsForMatchups", "Error fetching team details", exception)
+            }
+    }
+
+    private fun displayPlayersForMatchup(matchup: Matchup) {
+        Log.d("displayPlayersForMatchup", "Displaying players for matchup: $matchup")
+        fetchTeamRosters(matchup.team1ID, matchup.team2ID)
+    }
+
+    private fun fetchTeamRosters(team1ID: String, team2ID: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Leagues").document(leagueId!!).collection("Teams").get()
+            .addOnSuccessListener { documents ->
+                val rosters = documents.associate { doc ->
+                    Log.d("fetchTeamRosters", "Team: ${doc.id} -> ${doc.data}")
+                    doc.id to (doc.get("Starting") as? List<String> ?: emptyList())
+                }
+
+                val team1Roster = rosters[team1ID] ?: emptyList()
+                val team2Roster = rosters[team2ID] ?: emptyList()
+
+                Log.d("fetchTeamRosters", "Team 1 roster: $team1Roster")
+                Log.d("fetchTeamRosters", "Team 2 roster: $team2Roster")
+
+                fetchPlayersForLineup(team1Roster, isTeam1 = true)
+                fetchPlayersForLineup(team2Roster, isTeam1 = false)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("fetchTeamRosters", "Error fetching team rosters", exception)
+            }
+    }
+
+    private fun fetchPlayersForLineup(playerIds: List<String>, isTeam1: Boolean) {
+        val positionOrder = listOf("PG", "SG", "SF", "PF", "C", "G", "F", "UTIL", "UTIL", "UTIL")
+
+        if (playerIds.isEmpty()) {
+            Log.d("fetchPlayersForLineup", "No player IDs provided for ${if (isTeam1) "Team A" else "Team B"}")
+            if (isTeam1) teamAPlayers.clear() else teamBPlayers.clear()
+            playerAdapter.notifyDataSetChanged()
+            return
+        }
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("players")
+            .whereIn(FieldPath.documentId(), playerIds)
+            .get()
+            .addOnSuccessListener { documents ->
+                val playersMap = documents.associateBy { it.id }
+
+                val players = playerIds.mapIndexedNotNull { index, playerId ->
+                    val doc = playersMap[playerId]
+                    if (doc != null) {
+                        Player(
+                            playerID = doc.id,
+                            longName = doc.getString("longName") ?: "Unknown",
+                            pos = positionOrder.getOrNull(index) ?: "UTIL",
+                            stats = PlayerStats(
+                                pts = (doc.get("TotalStats") as? Map<*, *>)?.get("pts")?.toString() ?: "0.0"
+                            ),
+                            team = doc.getString("team") ?: "",
+                            nbaComHeadshot = doc.getString("nbaComHeadshot") ?: ""
+                        )
                     } else {
-                        view.findViewById<TextView>(R.id.team2Name).text = teamName
-                        Glide.with(this).load(teamImageUrl).into(view.findViewById(R.id.team2Image))
+                        Log.w("fetchPlayersForLineup", "Player ID $playerId not found in Firestore")
+                        null
                     }
                 }
+
+                if (isTeam1) {
+                    Log.d("fetchPlayersForLineup", "Team A players fetched: $players")
+                    teamAPlayers.clear()
+                    teamAPlayers.addAll(players)
+                } else {
+                    Log.d("fetchPlayersForLineup", "Team B players fetched: $players")
+                    teamBPlayers.clear()
+                    teamBPlayers.addAll(players)
+                }
+
+                playerAdapter.notifyDataSetChanged()
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Error fetching team details: ${e.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { exception ->
+                Log.e("fetchPlayersForLineup", "Error fetching players", exception)
             }
     }
+
+
+
+
+    private fun openPlayerProfile(player: Player) {
+        val playerProfileFragment = PlayerInfoFragment()
+
+        val bundle = Bundle()
+        bundle.putParcelable("selectedPlayer", player) // Assuming Player class implements Parcelable
+        playerProfileFragment.arguments = bundle
+        findNavController().navigate(R.id.playerInfoFragment, bundle)
+        // Use fragment transaction to navigate
+        /*requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, playerProfileFragment)
+            .addToBackStack(null)
+            .commit()*/
+    }
+
+
 }

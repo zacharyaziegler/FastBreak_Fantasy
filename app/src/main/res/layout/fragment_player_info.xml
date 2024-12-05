@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:padding="16dp">
 
     <LinearLayout
@@ -44,6 +44,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Player Name"
+                    android:textColor="@color/text_color"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
@@ -52,7 +53,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Team"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/text_color"
                     android:textSize="16sp" />
 
                 <TextView
@@ -60,7 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Position"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/text_color"
                     android:textSize="16sp" />
 
                 <TextView
@@ -78,35 +79,84 @@
             android:id="@+id/statsHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Season Stats"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:text="Season Stats"
+            android:textColor="@color/text_color"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="*"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:stretchColumns="*">
 
             <TableRow>
-                <TextView android:text="PTS" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="REB" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="AST" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="STL" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="BLK" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="TOV" android:textStyle="bold" android:padding="8dp"/>
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="PTS"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="REB"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="AST"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="STL"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="BLK"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="TOV"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
             </TableRow>
 
             <TableRow>
-                <TextView android:id="@+id/playerPts" android:padding="8dp"/>
-                <TextView android:id="@+id/playerReb" android:padding="8dp"/>
-                <TextView android:id="@+id/playerAst" android:padding="8dp"/>
-                <TextView android:id="@+id/playerStl" android:padding="8dp"/>
-                <TextView android:id="@+id/playerBlk" android:padding="8dp"/>
-                <TextView android:id="@+id/playerTov" android:padding="8dp"/>
+
+                <TextView
+                    android:id="@+id/playerPts"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerReb"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerAst"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerStl"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerBlk"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerTov"
+                    android:padding="8dp" />
             </TableRow>
         </TableLayout>
 
@@ -115,38 +165,95 @@
             android:id="@+id/projectionsHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Weekly Projections"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:text="Weekly Projections"
+            android:textColor="@color/text_color"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
 
         <TableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:stretchColumns="*"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:stretchColumns="*">
 
             <TableRow>
-                <TextView android:text="PTS" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="REB" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="AST" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="STL" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="BLK" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="TOV" android:textStyle="bold" android:padding="8dp"/>
-                <TextView android:text="FPTS" android:textStyle="bold" android:padding="8dp"/>
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="PTS"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="REB"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="AST"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="STL"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="BLK"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="TOV"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="8dp"
+                    android:text="FPTS"
+                    android:textColor="@color/text_color"
+                    android:textStyle="bold" />
             </TableRow>
 
             <TableRow>
-                <TextView android:id="@+id/playerPtsProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerRebProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerAstProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerStlProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerBlkProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerTovProj" android:padding="8dp"/>
-                <TextView android:id="@+id/playerFantasyPointsProj" android:padding="8dp"/>
+
+                <TextView
+                    android:id="@+id/playerPtsProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerRebProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerAstProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerStlProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerBlkProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerTovProj"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/playerFantasyPointsProj"
+                    android:padding="8dp" />
             </TableRow>
         </TableLayout>
 
@@ -156,15 +263,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Injury Information:"
+            android:textColor="@color/text_color"
             android:textSize="14sp" />
 
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:fillViewport="true"
-            android:scrollbars="none"
-            android:layout_marginTop="16dp">
+            android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -175,17 +283,24 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="#CCCCCC"
                     android:orientation="horizontal"
-                    android:padding="8dp"
-                    android:background="#CCCCCC">
+                    android:padding="8dp">
 
-                    <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:gravity="center" android:text="Date" android:textStyle="bold"/>
+                    <TextView
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Date"
+                        android:textColor="@color/text_color"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="Opponent"
+                        android:textColor="@color/text_color"
                         android:textStyle="bold" />
 
                     <TextView
@@ -193,20 +308,59 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="PTS"
+                        android:textColor="@color/text_color"
                         android:textStyle="bold" />
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="REB" android:textStyle="bold"/>
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="AST" android:textStyle="bold"/>
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="STL" android:textStyle="bold"/>
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="BLK" android:textStyle="bold"/>
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="TOV" android:textStyle="bold"/>
-                    <TextView android:layout_width="60dp" android:layout_height="wrap_content" android:gravity="center" android:text="FPTS" android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="REB"
+                        android:textColor="@color/text_color"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="AST"
+                        android:textColor="@color/text_color"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="STL"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="BLK"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="TOV"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="FPTS"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/past_games_recycler_view"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent" />
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>

@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         //scheduleLeagueProcessing()
         //triggerOneTimeLeagueProcessing()
 
-        //processLeagueMatchups("9bMCw7gJRZrS0b9tQTGo", "week01")
+        //processLeagueMatchups("g11QJdRoaR7WhJIuya3A", "week01")
 
 
         // Use the helper class to check permissions and schedule WorkManager
@@ -172,6 +172,8 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.loginFragment)
 
         }
+
+
 
 
 
