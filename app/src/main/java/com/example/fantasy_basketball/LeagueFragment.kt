@@ -268,7 +268,11 @@ class LeagueFragment : Fragment() {
             .addOnSuccessListener { leagueDoc ->
                 if (leagueDoc.exists()) {
                     val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+
                     sharedViewModel.leagueName = leagueName
+
+                    inviteCode = leagueDoc.getString("inviteCode") ?: "No Invite Code"
+
                     val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
                    // leagueNameTextView.text = leagueName
 

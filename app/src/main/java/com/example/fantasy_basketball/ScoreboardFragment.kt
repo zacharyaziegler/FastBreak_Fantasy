@@ -7,7 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.findNavController
+
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,22 +23,31 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ScoreboardFragment : Fragment() {
 
+
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var weekSpinner: Spinner
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ScoreboardPlayerAdapter
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
+    private var leagueId: String? = null
+    private var selectedWeek: String = "week01" // Default week
+
     private lateinit var matchupsRecyclerView: RecyclerView
     private lateinit var playerRecyclerView: RecyclerView
     private lateinit var matchupsAdapter: MatchupsAdapter
     private lateinit var playerAdapter: ScoreboardPlayerAdapter
-    private val sharedViewModel: SharedDataViewModel by activityViewModels()
+
     private val matchupsList = mutableListOf<FullMatchup>() // Store all matchups for the week
     private val teamAPlayers = mutableListOf<Player>()
     private val teamBPlayers = mutableListOf<Player>()
 
-    private var leagueId: String? = "g11QJdRoaR7WhJIuya3A"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_scoreboard, container, false)
+
 
         // Fetch the leagueId from arguments
         /*
