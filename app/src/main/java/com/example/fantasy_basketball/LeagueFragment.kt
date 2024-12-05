@@ -272,7 +272,7 @@ class LeagueFragment : Fragment() {
                     sharedViewModel.leagueName = leagueName
 
                     inviteCode = leagueDoc.getString("inviteCode") ?: "No Invite Code"
-
+                    sharedViewModel.inviteCode = inviteCode
                     val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
                    // leagueNameTextView.text = leagueName
 
