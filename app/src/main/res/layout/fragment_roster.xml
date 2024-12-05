@@ -1,87 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
 
-    <!-- Toolbar at the top -->
-    <include
-        layout="@layout/league_toolbar_layout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_scrollFlags="scroll|enterAlways" />
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
 
-    <!-- Scrollable content below the toolbar -->
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="0dp">
+        <TextView
+            android:id="@+id/title_starting_lineup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Starting Lineup"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_starting_lineup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Total Points Box -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:orientation="horizontal"
+            android:gravity="end|center_vertical"
+            android:layout_marginBottom="16dp">
 
             <TextView
-                android:id="@+id/title_starting_lineup"
+                android:id="@+id/label_total_points"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Starting Lineup"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_starting_lineup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Total Points Box -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end|center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:id="@+id/label_total_points"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Fantasy Points:"
-                    android:textSize="24sp"
-                    android:layout_marginEnd="8dp" />
-
-                <TextView
-                    android:id="@+id/text_total_points"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:text="Total Fantasy Points:"
+                android:textSize="24sp"
+                android:layout_marginEnd="8dp" />
 
             <TextView
-                android:id="@+id/title_bench"
+                android:id="@+id/text_total_points"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bench"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_bench"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
+                android:text="0"
+                android:textSize="24sp"
+                android:textStyle="bold" />
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <TextView
+            android:id="@+id/title_bench"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bench"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_bench"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

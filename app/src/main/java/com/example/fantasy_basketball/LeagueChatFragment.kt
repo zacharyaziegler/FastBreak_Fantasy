@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -28,6 +29,7 @@ class LeagueChatFragment : Fragment() {
     private var messageListener: ListenerRegistration? = null
     private var leagueId: String? = null
 
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,6 +45,7 @@ class LeagueChatFragment : Fragment() {
 
         // Retrieve leagueId from arguments and handle if missing
         leagueId = arguments?.getString("leagueId")
+        leagueId = sharedViewModel.leagueID
         if (leagueId == null) {
             Log.e("LeagueChatFragment", "League ID is missing")
             Toast.makeText(requireContext(), "League ID is missing", Toast.LENGTH_SHORT).show()

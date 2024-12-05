@@ -14,4 +14,10 @@ class RulesFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_rules, container, false)
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Make sure global navigation bar is visible when in LeagueFragment
+        (activity as? MainActivity)?.setActiveFragment("RulesFragment")
+    }
 }

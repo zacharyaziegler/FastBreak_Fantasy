@@ -5,10 +5,13 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class RosterFragment : Fragment() {
+class RosterFragment : Fragment(){
 
     private lateinit var leagueId: String
     private lateinit var teamId: String
@@ -33,7 +36,7 @@ class RosterFragment : Fragment() {
     var roster = mutableListOf<Player?>()
     private val startingLineup = mutableListOf<Player?>(null, null, null, null, null, null, null, null, null, null)
     private val bench = mutableListOf<Player?>()
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -44,6 +47,8 @@ class RosterFragment : Fragment() {
             leagueId = it.getString("leagueID", "")
             teamId = it.getString("teamID", "")
         }
+        leagueId = sharedViewModel.leagueID.toString()
+        teamId = sharedViewModel.teamID.toString()
 
 // Create the RosterAdapter for starting lineup
         startingLineupAdapter = RosterAdapter(
@@ -91,6 +96,12 @@ class RosterFragment : Fragment() {
 
         return view
     }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.setActiveFragment("RosterFragment")
+    }
+
 
     private suspend fun fetchPlayerById(
         firestore: FirebaseFirestore,
@@ -567,6 +578,8 @@ class RosterFragment : Fragment() {
             .addToBackStack(null)
             .commit()*/
     }
+
+
 
 
 }

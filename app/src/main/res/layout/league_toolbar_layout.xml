@@ -6,7 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
-    app:navigationIcon="@drawable/ic_hamburger_menu"
+    app:navigationIcon="@drawable/baseline_arrow_back_ios_24"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
     android:title="League Name"
-    android:titleTextColor="@android:color/black" />
+    android:titleTextColor="@android:color/black">
+
+
+    <!-- Add a menu icon (hamburger) to the right -->
+<ImageView
+android:id="@+id/hamburgerIcon"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_gravity="end"
+android:src="@drawable/ic_hamburger_menu"
+android:padding="8dp" />
+    </androidx.appcompat.widget.Toolbar>
+

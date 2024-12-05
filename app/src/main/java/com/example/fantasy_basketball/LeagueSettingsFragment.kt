@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -24,7 +25,7 @@ class LeagueSettingsFragment : Fragment() {
     private lateinit var draftDateEditText: EditText
     private lateinit var draftTimeEditText: EditText
     private lateinit var setDraftButton: Button
-    private lateinit var leagueNameTextView: TextView
+   // private lateinit var leagueNameTextView: TextView
 
     private var selectedYear = 0
     private var selectedMonth = 0
@@ -34,7 +35,7 @@ class LeagueSettingsFragment : Fragment() {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var leagueId: String
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -45,20 +46,20 @@ class LeagueSettingsFragment : Fragment() {
         draftDateEditText = view.findViewById(R.id.draftDateEditText)
         draftTimeEditText = view.findViewById(R.id.draftTimeEditText)
         setDraftButton = view.findViewById(R.id.setDraftButton)
-        leagueNameTextView = view.findViewById(R.id.leagueName)
+       // leagueNameTextView = view.findViewById(R.id.leagueName)
 
         // Retrieve and display the league name and ID
-        val leagueName = arguments?.getString("leagueName") ?: "Unknown League"
+        var leagueName = arguments?.getString("leagueName") ?: "Unknown League"
         leagueId = arguments?.getString("leagueId") ?: ""
-        leagueNameTextView.text = leagueName
+        leagueId = sharedViewModel.leagueID.toString()
+        leagueName = sharedViewModel.leagueName.toString()
+
+     //   leagueNameTextView.text = leagueName
+
 
         firestore = FirebaseFirestore.getInstance()
 
-        // Set up toolbar
-        val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
-        toolbar.setNavigationOnClickListener {
-            findNavController().popBackStack() // Navigate back
-        }
+
 
         // Load current draft date and time if available
         loadDraftDateTime()
