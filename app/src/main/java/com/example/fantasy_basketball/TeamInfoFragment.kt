@@ -51,7 +51,7 @@ class TeamInfoFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_team_info, container, false)
 
         // Initialize views
-        toolbar = view.findViewById(R.id.teamInfoToolbar)
+       // toolbar = view.findViewById(R.id.teamInfoToolbar)
         teamImageView = view.findViewById(R.id.teamImageView)
         teamNameTextView = view.findViewById(R.id.teamNameTextView)
         editTeamButton = view.findViewById(R.id.editTeamButton)
@@ -60,7 +60,7 @@ class TeamInfoFragment : Fragment() {
         loadTeamData()
 
         // Set up the toolbar
-        setupToolbar()
+       // setupToolbar()
 
         // Handle button click to navigate to EditTeamInfoFragment
         editTeamButton.setOnClickListener {
