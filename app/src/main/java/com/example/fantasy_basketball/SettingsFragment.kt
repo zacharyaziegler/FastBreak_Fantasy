@@ -32,6 +32,11 @@ class SettingsFragment : Fragment() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
     }
+    override fun onResume() {
+        super.onResume()
+        // Make sure global navigation bar is visible when in LeagueFragment
+        (activity as? MainActivity)?.setActiveFragment("SettingsFragment")
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

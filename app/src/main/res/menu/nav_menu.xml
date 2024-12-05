@@ -2,21 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/ic_home"
-        android:icon="@drawable/ic_home"
-        android:title="Home"/>
-
+        android:id="@+id/ic_Roster"
+        android:icon="@drawable/baseline_diversity_3_24"
+        android:title="Roster"/>
     <item
-        android:id="@+id/ic_setting"
-        android:icon="@drawable/ic_setting"
-        android:title="Setting"/>
+        android:id="@+id/ic_Match"
+        android:icon="@drawable/baseline_sports_basketball_24"
+        android:title="Match Up"/>
     <item
         android:id="@+id/ic_Search"
         android:icon="@drawable/ic_search"
-        android:title="Search"/>
+        android:title="Players"/>
     <item
-        android:id="@+id/ic_info"
-        android:icon="@drawable/baseline_info_24"
-        android:title="Info"/>
+        android:id="@+id/ic_Chat"
+        android:icon="@drawable/ic_chat"
+        android:title="Chat"/>
 
 </menu>

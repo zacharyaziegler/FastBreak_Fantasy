@@ -1,88 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
-
-
-    <ImageView
-        android:id="@+id/playerPicture"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginEnd="8dp"
-         />
-
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
-        android:layout_width="172dp"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
-
-        <TextView
-            android:id="@+id/playerName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Player Name"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
+        <ImageView
+            android:id="@+id/playerPicture"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="21dp"
-            android:orientation="horizontal">
+            android:layout_width="172dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/playerTeam"
-                android:layout_width="wrap_content"
+                android:id="@+id/playerName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Team" />
+                android:text="Player Name"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/playerPosition"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="Position" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="21dp"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/playerStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Status" />
+                <TextView
+                    android:id="@+id/playerTeam"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="Team" />
+
+                <TextView
+                    android:id="@+id/playerPosition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="Position" />
+
+                <TextView
+                    android:id="@+id/playerStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status" />
+            </LinearLayout>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/playerPoints"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:layout_height="47dp"
+            android:text="Points" />
+
+        <TextView
+            android:id="@+id/playerRebounds"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:layout_height="47dp"
+            android:text="Avg" />
+
+        <TextView
+            android:id="@+id/playerAssists"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:layout_height="47dp"
+            android:text="Minutes" />
+
     </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/playerPoints"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:layout_height="47dp"
-        android:text="Points" />
-
-
-    <TextView
-        android:id="@+id/playerRebounds"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:layout_height="47dp"
-        android:text="Avg" />
-
-
-    <TextView
-        android:id="@+id/playerAssists"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_gravity="center"
-        android:layout_height="47dp"
-        android:text="Minutes" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

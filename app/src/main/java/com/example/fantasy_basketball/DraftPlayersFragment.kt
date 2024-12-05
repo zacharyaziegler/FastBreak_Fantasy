@@ -40,7 +40,7 @@ class DraftPlayersFragment : Fragment() {
     private var draftListenerRegistration: ListenerRegistration? = null
 
     // Configurable pick duration (in seconds)
-    private val PICK_DURATION_SECONDS = 20 // Change to 60 for production
+    private val PICK_DURATION_SECONDS = 10 // Change to 60 for production
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -359,9 +359,6 @@ class DraftPlayersFragment : Fragment() {
                 // Add the player to the team's roster
                 transaction.update(teamRef, "roster", FieldValue.arrayUnion(availablePlayer.playerID))
 
-                // Remove the player from cachedPlayers locally
-                cachedPlayers.remove(availablePlayer)
-
                 Log.d("DraftPlayersFragment", "Auto-drafted player: ${availablePlayer.playerID} for team: $currentTeamId")
                 true
             }.await() // Wait for the transaction to complete
@@ -573,4 +570,3 @@ class DraftPlayersFragment : Fragment() {
         playerAdapter.updateList(cachedPlayers, isUserOnTheClock)
     }
 }
-

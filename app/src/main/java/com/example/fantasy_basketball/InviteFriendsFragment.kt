@@ -10,15 +10,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 
 class InviteFriendsFragment : Fragment() {
 
     private lateinit var inviteCodeTextView: TextView
-    private lateinit var leagueNameTextView: TextView
+   // private lateinit var leagueNameTextView: TextView
     private lateinit var shareInviteButton: Button
     private var inviteCode: String = ""
     private var leagueName: String = ""
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Retrieve the inviteCode and leagueName passed from the previous fragment
@@ -26,6 +27,13 @@ class InviteFriendsFragment : Fragment() {
             inviteCode = it.getString("inviteCode", "")
             leagueName = it.getString("leagueName", "")
         }
+        leagueName = sharedViewModel.leagueName.toString()
+        inviteCode = sharedViewModel.inviteCode.toString()
+
+
+
+
+
     }
 
     override fun onCreateView(
@@ -36,12 +44,12 @@ class InviteFriendsFragment : Fragment() {
 
         // Initialize Views
         inviteCodeTextView = view.findViewById(R.id.inviteCodeTextView)
-        leagueNameTextView = view.findViewById(R.id.leagueNameTextView)
+        //leagueNameTextView = view.findViewById(R.id.leagueNameTextView)
         shareInviteButton = view.findViewById(R.id.shareInviteButton)
 
         // Validate and Set the league name and invite code
         if (leagueName.isNotEmpty() && inviteCode.isNotEmpty()) {
-            leagueNameTextView.text = leagueName
+          //  leagueNameTextView.text = leagueName
             inviteCodeTextView.text = inviteCode
         } else {
             Toast.makeText(requireContext(), "League details are missing", Toast.LENGTH_SHORT).show()
@@ -53,11 +61,7 @@ class InviteFriendsFragment : Fragment() {
             shareInviteCode()
         }
 
-        // Handle toolbar setup
-        val toolbar: Toolbar = view.findViewById(R.id.inviteToolbar)
-        toolbar.setNavigationOnClickListener {
-            activity?.onBackPressed()
-        }
+
 
         return view
     }

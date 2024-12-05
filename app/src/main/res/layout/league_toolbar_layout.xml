@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.Toolbar
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/leagueToolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
-    app:navigationIcon="@drawable/ic_hamburger_menu"
-    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    android:background="@color/button_color"
     android:title="League Name"
-    android:titleTextColor="@android:color/black" />
+    app:navigationIcon="@drawable/baseline_arrow_back_ios_24"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+
+    <!-- Add a menu icon (hamburger) to the right -->
+    <ImageView
+        android:id="@+id/hamburgerIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:padding="8dp"
+        android:src="@drawable/ic_hamburger_menu" />
+</androidx.appcompat.widget.Toolbar>
+

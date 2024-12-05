@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,7 +27,7 @@ class ScoreboardFragment : Fragment() {
     private val matchupsList = mutableListOf<FullMatchup>() // Store all matchups for the week
     private val teamAPlayers = mutableListOf<Player>()
     private val teamBPlayers = mutableListOf<Player>()
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     private var leagueId: String? = "g11QJdRoaR7WhJIuya3A"
 
     override fun onCreateView(
@@ -34,18 +35,18 @@ class ScoreboardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_scoreboard, container, false)
-/*
+        /*
 
-        leagueId = arguments?.getString("leagueId") ?: run {
-            Log.e("ScoreboardFragment", "leagueId argument is missing")
-            return view
-        }
-
-
- */
+                leagueId = arguments?.getString("leagueId") ?: run {
+                    Log.e("ScoreboardFragment", "leagueId argument is missing")
+                    return view
+                }
 
 
-        leagueId = "g11QJdRoaR7WhJIuya3A"
+         */
+
+
+        leagueId = sharedViewModel.leagueID
         Log.d("ScoreboardFragment", "League ID: $leagueId")
 
         setupMatchupsRecyclerView(view)

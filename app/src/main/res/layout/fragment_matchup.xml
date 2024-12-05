@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/embedded_background">
 
     <!-- The container for the current matchup -->
     <androidx.cardview.widget.CardView
@@ -23,7 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:background="@color/embedded_background">
 
             <!-- My Teams heading -->
             <TextView
@@ -34,7 +36,8 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_gravity="center_horizontal"
-                android:paddingBottom="8dp" />
+                android:paddingBottom="8dp"
+                android:textColor="@color/text_color"/>
 
             <!-- Teams comparison box -->
             <LinearLayout
@@ -66,11 +69,14 @@
                         android:id="@+id/userTeamName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="My Team Name"
-                        android:textSize="16sp"
+                        android:ellipsize="end"
                         android:gravity="center_horizontal"
-                        android:textStyle="bold"
-                        android:paddingTop="8dp" />
+                        android:maxLines="1"
+                        android:paddingTop="8dp"
+                        android:text="My Team Name"
+                        android:textColor="@color/text_color"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <!-- Center: "Versus" text -->
@@ -80,6 +86,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="16dp"
                     android:text="VS"
+                    android:textColor="@color/text_color"
                     android:textSize="18sp" />
 
                 <!-- Right: Opponent team -->
@@ -104,7 +111,10 @@
                         android:id="@+id/opponentTeamName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="Opponent Team Name"
+                        android:textColor="@color/text_color"
                         android:textSize="16sp"
                         android:gravity="center_horizontal"
                         android:textStyle="bold"
@@ -124,5 +134,7 @@
         app:layout_constraintTop_toBottomOf="@id/cardView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/button_color"
+        android:textColor="@color/button_text_color"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
