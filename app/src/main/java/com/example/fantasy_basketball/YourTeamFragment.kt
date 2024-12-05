@@ -36,6 +36,8 @@ class YourTeamFragment : Fragment() {
             teamId = it.getString("teamId") ?: ""
         }
 
+
+
         // Set up RecyclerView
         val recyclerView: RecyclerView = view.findViewById(R.id.recyclerViewYourTeam)
         recyclerView.layoutManager = LinearLayoutManager(context)

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -17,7 +18,7 @@ class ScoreboardFragment : Fragment() {
     private lateinit var weekSpinner: Spinner
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ScoreboardPlayerAdapter
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     private var leagueId: String? = null
     private var selectedWeek: String = "week01" // Default week
 
@@ -73,7 +74,7 @@ class ScoreboardFragment : Fragment() {
 
         // Retrieve leagueId from arguments
         leagueId = arguments?.getString("leagueId")
-
+        leagueId = sharedViewModel.leagueID
         // Initialize Spinner
         weekSpinner = view.findViewById(R.id.weekSpinner)
         setupWeekSpinner()

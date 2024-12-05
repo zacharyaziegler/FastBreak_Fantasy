@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,16 +28,19 @@ class LeagueFragment : Fragment() {
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
 
-    private lateinit var leagueNameTextView: TextView
-    private lateinit var teamNameTextView: TextView
+    //private lateinit var leagueNameTextView: TextView
+  //  private lateinit var teamNameTextView: TextView
     private lateinit var draftMessageTextView: TextView
     private lateinit var draftCountdownTextView: TextView
     private lateinit var enterDraftRoomButton: Button
     private lateinit var recyclerView: RecyclerView
-    private lateinit var teamInfoButton: ImageButton
+    //private lateinit var teamInfoButton: ImageButton
 
     private var inviteCode: String = ""
     private var countdownTimer: CountDownTimer? = null
+    val sharedViewModel: SharedDataViewModel by activityViewModels()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +51,11 @@ class LeagueFragment : Fragment() {
         arguments?.let {
             leagueId = it.getString("leagueId", "")
         }
+        //sharedViewModel.leagueID =leagueId;
+
+
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,13 +64,13 @@ class LeagueFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_league, container, false)
 
         // Initialize views
-        leagueNameTextView = view.findViewById(R.id.leagueName)
-        teamNameTextView = view.findViewById(R.id.teamName)
+        //leagueNameTextView = view.findViewById(R.id.leagueName)
+        //teamNameTextView = view.findViewById(R.id.teamName)
         draftMessageTextView = view.findViewById(R.id.draftMessageTextView)
         draftCountdownTextView = view.findViewById(R.id.draftCountdownTextView)
         enterDraftRoomButton = view.findViewById(R.id.enterDraftRoomButton)
         recyclerView = view.findViewById(R.id.recyclerViewRoster)
-        teamInfoButton = view.findViewById(R.id.teamInfoButton)
+        //teamInfoButton = view.findViewById(R.id.teamInfoButton)
 
         // Initialize RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -72,15 +80,15 @@ class LeagueFragment : Fragment() {
         recyclerView.adapter = TeamRosterAdapter(placeholderRoster)
 
         // Set up the toolbar
-        val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
+    /*    val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
         toolbar.setNavigationIcon(R.drawable.ic_hamburger_menu)
         toolbar.setNavigationOnClickListener {
             showPopupMenu(it)
-        }
+        }*/
 
-        teamInfoButton.setOnClickListener {
+       /* teamInfoButton.setOnClickListener {
             navigateToTeamInfoFragment()
-        }
+        }*/
 
         // Navigate to Draft Room when the button is clicked
         enterDraftRoomButton.setOnClickListener {
@@ -95,11 +103,13 @@ class LeagueFragment : Fragment() {
                 Log.e("LeagueFragment", "Team ID not initialized. Cannot navigate to DraftRoomFragment.")
             }
         }
-        // Load league and team data
-        loadLeagueAndTeamData()
 
+// Load league and team data
+        loadLeagueAndTeamData()
         return view
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -107,7 +117,7 @@ class LeagueFragment : Fragment() {
         countdownTimer?.cancel()
     }
 
-    private fun showPopupMenu(view: View) {
+   /* private fun showPopupMenu(view: View) {
         // Create a PopupMenu and inflate the menu layout
         val popupMenu = PopupMenu(requireContext(), view)
         popupMenu.menuInflater.inflate(R.menu.league_menu, popupMenu.menu)
@@ -129,7 +139,7 @@ class LeagueFragment : Fragment() {
                 // Handle menu item clicks
                 popupMenu.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
-                        R.id.action_league_info -> {
+                        R.id.action_team_info -> {
                             // Navigate to League Info fragment (you can implement this)
                             true
                         }
@@ -195,7 +205,34 @@ class LeagueFragment : Fragment() {
             popupMenu.show()
 
         }
-    }
+    }*/
+
+   /* fun fetchLeagueDetails() {
+        val firestore = FirebaseFirestore.getInstance()
+        val leagueDocRef = firestore.collection("Leagues").document(leagueId)
+
+        leagueDocRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val leagueName = document.getString("leagueName") ?: "Unknown League"
+                    val inviteCode = document.getString("inviteCode") ?: "No Invite Code"
+
+                    // Perform your actions here, like updating the UI
+                    Log.d("LeagueDetails", "League Name: $leagueName, Invite Code: $inviteCode")
+                    sharedViewModel.leagueName = leagueName;
+                    sharedViewModel.inviteCode = inviteCode
+                    // Example: Update UI elements (if in Activity or Fragment)
+                    // leagueNameTextView.text = leagueName
+                    // inviteCodeTextView.text = inviteCode
+                } else {
+                    Log.e("LeagueDetails", "Document does not exist")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("LeagueDetails", "Failed to fetch league details", exception)
+            }
+    }*/
+
 
 
 
@@ -210,12 +247,12 @@ class LeagueFragment : Fragment() {
                     val teamDoc = teamsSnapshot.documents[0]
                     val teamName = teamDoc.getString("teamName") ?: "Unknown Team"
                     teamId = teamDoc.id // Initialize teamId
-                    teamNameTextView.text = teamName
-
+                  //  teamNameTextView.text = teamName
+                    sharedViewModel.teamID = teamId
                     // Once teamId is available, proceed to load league details
                     loadLeagueDetails()
                 } else {
-                    teamNameTextView.text = "No Team Found"
+                   // teamNameTextView.text = "No Team Found"
                     Log.e("LeagueFragment", "No team found for the current user in league $leagueId")
                 }
             }
@@ -231,8 +268,9 @@ class LeagueFragment : Fragment() {
             .addOnSuccessListener { leagueDoc ->
                 if (leagueDoc.exists()) {
                     val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+                    sharedViewModel.leagueName = leagueName
                     val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
-                    leagueNameTextView.text = leagueName
+                   // leagueNameTextView.text = leagueName
 
                     // Check if the draft is completed
                     if (draftStatus == "completed") {
@@ -345,7 +383,9 @@ class LeagueFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        //fetchLeagueDetails()
         // Make sure global navigation bar is visible when in LeagueFragment
-        (activity as? MainActivity)?.showBottomNavigation()
+       // (activity as? MainActivity)?.showBottomNavigation()
+        (activity as? MainActivity)?.setActiveFragment("LeagueFragment")
     }
 }

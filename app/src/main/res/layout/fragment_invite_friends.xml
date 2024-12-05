@@ -6,31 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".InviteFriendsFragment">
 
-    <!-- Toolbar with hamburger menu -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/inviteToolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:navigationIcon="@drawable/ic_hamburger_menu"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- League Name -->
-    <TextView
-        android:id="@+id/leagueNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="League Name"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.1" />
-
     <!-- Invite Code Text -->
 
     <!-- Share Button -->
@@ -39,14 +14,13 @@
         android:id="@+id/inviteCodeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
+        android:layout_marginTop="204dp"
         android:text="Invite Code"
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.488"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/leagueNameTextView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/shareInviteButton"

@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.fantasy_basketball.matchup_display_logic.MatchupAdapter
@@ -26,7 +27,7 @@ class HomeFragment : Fragment() {
     private lateinit var viewPager: ViewPager2
     private lateinit var matchupAdapter: MatchupAdapter
     private lateinit var firestore: FirebaseFirestore
-
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
     // Create a list to store matchups
     private var matchupsList: MutableList<MatchupData> = mutableListOf()
 
@@ -60,6 +61,8 @@ class HomeFragment : Fragment() {
                 putString("leagueId", leagueId)
                 putString("leagueName", leagueName)
             }
+             sharedViewModel.leagueID = leagueId
+            sharedViewModel.leagueName = leagueName
             findNavController().navigate(R.id.action_homeFragment_to_leagueFragment, bundle)
         }
         viewPager.adapter = matchupAdapter
@@ -79,6 +82,11 @@ class HomeFragment : Fragment() {
         view.findViewById<Button>(R.id.joinLeagueBtn).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_joinLeagueFragment)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.setActiveFragment("HomeFragment")
     }
 
     private fun fetchUserMatchups() {

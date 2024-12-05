@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,6 +25,7 @@ class TeamInfoFragment : Fragment() {
 
     private var currentTeamName: String = ""
     private var currentProfilePictureUrl: String = ""
+    private val sharedViewModel: SharedDataViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,9 @@ class TeamInfoFragment : Fragment() {
             leagueId = it.getString("leagueId", "")
             teamId = it.getString("teamId", "")
         }
+
+        leagueId = sharedViewModel.leagueID.toString()
+        teamId = sharedViewModel.teamID.toString()
     }
 
     override fun onCreateView(
