@@ -2,8 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@android:color/white">
+    android:background="@color/background"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,77 +14,77 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="Scoring Rules"
-            android:textStyle="bold"
             android:textSize="18sp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="• Points: 1\n• Rebounds: 1.25\n• Assists: 1.5\n• Steals: 3\n• Blocks: 3\n• Turnovers: -1"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            android:textSize="16sp" />
 
         <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginVertical="16dp" />
+            android:layout_marginVertical="16dp"
+            android:background="@android:color/darker_gray" />
 
         <!-- Creating and Joining a League Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="Creating and Joining a League"
-            android:textStyle="bold"
             android:textSize="18sp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="• Press Create League on the home screen.\n"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            android:textSize="16sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="• Choose the number of members in the league and confirm the scoring type.\n"
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            android:textSize="16sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="• Once the league is created, press the hamburger menu in the top left to set the draft date and invite friends."
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            android:textSize="16sp" />
 
         <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginVertical="16dp" />
+            android:layout_marginVertical="16dp"
+            android:background="@android:color/darker_gray" />
 
         <!-- Drafting a Team and Setting Lineups Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="Drafting a Team and Setting Lineups"
-            android:textStyle="bold"
             android:textSize="18sp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
             android:text="• Coming soon..."
-            android:textSize="16sp"
-            android:paddingBottom="16dp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 </ScrollView>

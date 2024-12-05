@@ -75,9 +75,9 @@ class LeagueFragment : Fragment() {
         // Initialize RecyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Placeholder data for testing purposes
-        val placeholderRoster = List(13) { Player("Player ${it + 1}", "Position ${it + 1}", "Team ${it + 1}") }
-        recyclerView.adapter = TeamRosterAdapter(placeholderRoster)
+//        // Placeholder data for testing purposes
+//        val placeholderRoster = List(13) { Player("Player ${it + 1}", "Position ${it + 1}", "Team ${it + 1}") }
+//        recyclerView.adapter = TeamRosterAdapter(placeholderRoster)
 
         // Set up the toolbar
     /*    val toolbar: Toolbar = view.findViewById(R.id.leagueToolbar)
@@ -268,7 +268,11 @@ class LeagueFragment : Fragment() {
             .addOnSuccessListener { leagueDoc ->
                 if (leagueDoc.exists()) {
                     val leagueName = leagueDoc.getString("leagueName") ?: "Unknown League"
+
                     sharedViewModel.leagueName = leagueName
+
+                    inviteCode = leagueDoc.getString("inviteCode") ?: "No Invite Code"
+
                     val draftStatus = leagueDoc.getString("draftStatus") ?: "pending"
                    // leagueNameTextView.text = leagueName
 
