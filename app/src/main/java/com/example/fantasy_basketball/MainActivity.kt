@@ -11,9 +11,15 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import android.util.Log
+import android.widget.ImageView
+import android.widget.PopupMenu
+import androidx.appcompat.widget.Toolbar
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.work.Constraints
@@ -31,6 +37,7 @@ import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +51,11 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-
+    private lateinit var firestore: FirebaseFirestore
+    private var activeFragment: String? = null
+    private val sharedViewModel: SharedDataViewModel by viewModels()
+    private lateinit var navController : NavController
+    private lateinit var bottomNavigation: BottomNavigationView
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -56,13 +67,13 @@ class MainActivity : AppCompatActivity() {
         //scheduleLeagueProcessing()
         //triggerOneTimeLeagueProcessing()
 
-        //processLeagueMatchups("9bMCw7gJRZrS0b9tQTGo", "week01")
+        //processLeagueMatchups("g11QJdRoaR7WhJIuya3A", "week01")
 
 
         // Use the helper class to check permissions and schedule WorkManager
         //WorkManagerHelper.checkAndRequestNotificationPermission(this)
         //WorkManagerHelper.scheduleWorkManager(this)
-
+        firestore = FirebaseFirestore.getInstance()
 
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
@@ -130,14 +141,14 @@ class MainActivity : AppCompatActivity() {
         // Get the NavHostFragment and NavController
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
 
 
-        val bottomNavigation: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigation= findViewById(R.id.bottom_navigation)
 
 
-        //navController.navigate(R.id.playerProjectionsFragment)
+       // navController.navigate(R.id.scoreboardFragment)
 
 /*
         lifecycleScope.launch {
@@ -146,12 +157,16 @@ class MainActivity : AppCompatActivity() {
 
  */
 
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+
         // Check if the user is already signed in and navigate accordingly
         if (auth.currentUser != null) {
             // If the user is signed in, navigate to the home fragment
             bottomNavigation.visibility = View.VISIBLE
+
             navController.navigate(R.id.homeFragment)
 
+            updateBottomNavigationVisibility()
         } else {
             // If not signed in, stay on the login fragment
             bottomNavigation.visibility = View.GONE
@@ -159,6 +174,8 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.loginFragment)
 
         }
+
+
 
 
 
@@ -170,22 +187,22 @@ class MainActivity : AppCompatActivity() {
         // Set the item selection listener for the BottomNavigationView
         bottomNavigation.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.ic_home -> {
+                R.id.ic_Roster -> {
                     // Navigate to HomeFragment when home icon is selected
-                    navController.navigate(R.id.homeFragment)
+                    navController.navigate(R.id.rosterFragment)
                     true
                 }
-                R.id.ic_setting -> {
+                R.id.ic_Match -> {
                     // Change this to navigate to the settings fragment when create
-                    navController.navigate(R.id.settingsFragment)
+                    navController.navigate(R.id.scoreboardFragment)
                     true
                 }
                 R.id.ic_Search -> {
                     navController.navigate(R.id.playerSearchFragment)
                     true
                 }
-                R.id.ic_info -> {
-                    navController.navigate(R.id.rulesFragment)
+                R.id.ic_Chat -> {
+                    navController.navigate(R.id.leagueChatFragment)
                     true
                 }
                 else -> false
@@ -193,11 +210,24 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+        val toolbar: Toolbar = findViewById(R.id.league_toolbar1)
+        setSupportActionBar(toolbar)
+        //supportActionBar?.title = "League Name"
+        // Monitor fragment changes
+        supportFragmentManager.addOnBackStackChangedListener {
+            updateToolbarNavigation()
+        }
+
+        val hamburgerIcon = toolbar.findViewById<ImageView>(R.id.hamburgerIcon)
+        hamburgerIcon.setOnClickListener {
+            showPopupMenu(it)
+        }
+
         // Add an authentication state listener to handle sign-in/sign-out events
         auth.addAuthStateListener { firebaseAuth ->
             if (firebaseAuth.currentUser != null) {
                 // User is signed in
-                bottomNavigation.visibility = View.VISIBLE
+                updateBottomNavigationVisibility()
             } else {
                 // User is not signed in
                 bottomNavigation.visibility = View.GONE
@@ -206,28 +236,163 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-/*
+    private fun updateToolbarNavigation() {
+        val toolbar = findViewById<Toolbar>(R.id.league_toolbar1)
 
-    private fun scheduleWeeklyPlayerProjectionsWorker() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
-            .build()
-
-        // Create a periodic work request with constraints
-        val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
-            7, TimeUnit.DAYS
-        )
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "PlayerProjectionsWork",
-            ExistingPeriodicWorkPolicy.KEEP,
-            playerProjectionsWorkRequest
-        )
+        when (activeFragment) {
+            "HomeFragment" -> {
+                toolbar.navigationIcon = null // Hide back button
+            }
+            else -> {
+                toolbar.setNavigationIcon(R.drawable.baseline_arrow_back_ios_24) // Show back button
+                toolbar.setNavigationOnClickListener {
+                    //onBackPressed() // Handle back navigation
+                    navController.navigate(R.id.homeFragment)
+                }
+            }
+        }
     }
 
- */
+
+
+    fun setActiveFragment(fragmentTag: String) {
+        activeFragment = fragmentTag
+        invalidateOptionsMenu() // Forces menu to refresh
+        updateToolbarNavigation()
+        updateBottomNavigationVisibility()
+        updateToolbarTitle()
+    }
+
+    fun updateToolbarTitle() {
+        when (activeFragment) {
+            "LeagueFragment" -> supportActionBar?.title = sharedViewModel.leagueName
+            "HomeFragment" -> supportActionBar?.title = getString(R.string.app_name)
+
+        }
+    }
+
+
+    fun updateBottomNavigationVisibility() {
+        if (activeFragment == "HomeFragment" || activeFragment == "RulesFragment" || activeFragment == "SettingsFragment"||activeFragment =="LeagueFragment") {
+            bottomNavigation.visibility = View.GONE // Hide bottom navigation for HomeFragment, RulesFragment, and SettingsFragment
+        } else {
+            bottomNavigation.visibility = View.VISIBLE // Show bottom navigation for other fragments
+        }
+    }
+
+    private fun showPopupMenu(view: View) {
+        val popupMenu = PopupMenu(this, view)
+        popupMenu.menuInflater.inflate(R.menu.league_menu, popupMenu.menu)
+
+        // Default: Hide all menu items
+        popupMenu.menu.findItem(R.id.action_team_info)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_invite_friends)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_league_chat)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_scoreboard)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_league_settings)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_home_Setting)?.isVisible = false
+        popupMenu.menu.findItem(R.id.action_rules)?.isVisible = false
+
+        // Adjust menu visibility based on the current fragment
+        when (activeFragment) {
+            "HomeFragment" -> {
+                popupMenu.menu.findItem(R.id.action_home_Setting)?.isVisible = true
+                popupMenu.menu.findItem(R.id.action_rules)?.isVisible = true
+            }
+            "LeagueFragment", "RosterFragment" -> {
+                val currentUserId = auth.currentUser?.uid ?: return
+
+                // Check if the user is the commissioner
+                sharedViewModel.leagueID?.let { leagueID ->
+                    firestore.collection("Leagues").document(leagueID).get()
+                        .addOnSuccessListener { leagueDoc ->
+                            if (leagueDoc.exists()) {
+                                val commissionerId = leagueDoc.getString("commissionerID")
+
+                                // Make "League Settings" visible only if the current user is the commissioner
+                                if (commissionerId == currentUserId) {
+                                    popupMenu.menu.findItem(R.id.action_league_settings)?.isVisible = true
+                                }
+                            }
+                        }
+                }
+
+                // These menu items are always visible in LeagueFragment and RosterFragment
+                popupMenu.menu.findItem(R.id.action_team_info)?.isVisible = true
+                popupMenu.menu.findItem(R.id.action_invite_friends)?.isVisible = true
+                //popupMenu.menu.findItem(R.id.action_rules)?.isVisible = true
+              //  popupMenu.menu.findItem(R.id.action_league_chat)?.isVisible = true
+               // popupMenu.menu.findItem(R.id.action_scoreboard)?.isVisible = true
+            }
+        }
+
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_home_Setting -> {
+                    // Handle Home Settings click
+                    // Change this to navigate to the settings fragment when create
+                    navController.navigate(R.id.settingsFragment)
+                    true
+                }
+                R.id.action_rules -> {
+                    navController.navigate(R.id.rulesFragment)
+                    true
+                }
+                R.id.action_team_info -> {
+                    // Handle League Info click
+                    navController.navigate(R.id.teamInfoFragment)
+                    true
+                }
+                R.id.action_invite_friends -> {
+                    // Handle Invite Friends click
+                    navController.navigate(R.id.inviteFriendsFragment)
+                    true
+                }
+                R.id.action_league_chat -> {
+                    // Handle League Chat click
+                    true
+                }
+                R.id.action_scoreboard -> {
+                    // Handle League Scoreboard click
+                    true
+                }
+                R.id.action_league_settings -> {
+                    // Handle League Settings click
+                    navController.navigate(R.id.leagueSettingsFragment)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+
+
+    /*
+
+        private fun scheduleWeeklyPlayerProjectionsWorker() {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)  // Requires the device to be connected to the internet
+                .build()
+
+            // Create a periodic work request with constraints
+            val playerProjectionsWorkRequest = PeriodicWorkRequestBuilder<PlayerProjectionsWorker>(
+                7, TimeUnit.DAYS
+            )
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "PlayerProjectionsWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                playerProjectionsWorkRequest
+            )
+        }
+
+     */
 
 
 /*
@@ -264,6 +429,8 @@ class MainActivity : AppCompatActivity() {
     }
 
  */
+
+
 
 
 

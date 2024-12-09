@@ -1,111 +1,67 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".LeagueFragment">
-
-    <!-- League Name -->
-    <ImageButton
-        android:id="@+id/teamInfoButton"
-        android:layout_width="56dp"
-        android:layout_height="53dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_info"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:elevation="4dp" />
-
-    <TextView
-        android:id="@+id/leagueName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="League Name"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.1" />
-
-    <!-- Team Name -->
-    <TextView
-        android:id="@+id/teamName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Team Name"
-        android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@id/leagueName"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.2" />
-
-    <!-- Team Info Button -->
-
-    <!-- Toolbar with hamburger menu -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/leagueToolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:navigationIcon="@drawable/ic_hamburger_menu"
-        android:focusable="false"
-        android:clickable="false"/>
-
-    <!-- Draft message TextView -->
-
-    <!-- Enter Draft Room Button -->
 
     <TextView
         android:id="@+id/draftMessageTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
-        android:gravity="center|center_horizontal|center_vertical"
+        android:gravity="center"
         android:text="The Draft Countdown will display here once the commissioner sets the date and time"
+        android:textColor="@color/text_color"
         android:textSize="18sp"
         android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/teamName" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.349" />
 
     <TextView
         android:id="@+id/draftCountdownTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="156dp"
+        android:textColor="@color/text_color"
+
         android:textSize="18sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/teamName" />
+        app:layout_constraintTop_toBottomOf="@id/draftMessageTextView" />
+
+    <!-- Enter Draft Room Button -->
+
+    <!-- RecyclerView for Roster -->
 
     <Button
         android:id="@+id/enterDraftRoomButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:backgroundTint="@color/button_color"
         android:enabled="false"
         android:text="Enter Draft Room"
+        android:textColor="@color/button_text_color"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/draftMessageTextView" />
+        app:layout_constraintTop_toBottomOf="@id/draftCountdownTextView" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewRoster"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:scrollbars="vertical"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/teamName" />
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

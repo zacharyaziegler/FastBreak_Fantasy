@@ -24,12 +24,14 @@ class DraftPlayerAdapter(
         private val playerTeam = itemView.findViewById<TextView>(R.id.playerTeam)
         private val playerInjury = itemView.findViewById<TextView>(R.id.playerInjuryStatus)
         private val playerImage = itemView.findViewById<ImageView>(R.id.playerImage)
+        private val playerPosition = itemView.findViewById<TextView>(R.id.playerPosition)
 
         fun bind(player: Player) {
             playerName.text = player.longName
             playerFantasyPoints.text = player.projection?.fantasyPoints
             playerTeam.text = player.team
             playerInjury.text = player.injury?.status
+            playerPosition.text = player.pos
 
             // Load player image using Glide
             Glide.with(itemView.context)

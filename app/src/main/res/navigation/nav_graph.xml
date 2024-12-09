@@ -179,6 +179,9 @@
     <action
         android:id="@+id/action_teamInfoFragment_to_editTeamInfoFragment"
         app:destination="@id/editTeamInfoFragment" />
+    <action
+        android:id="@+id/action_teamInfoFragment_to_leagueFragment"
+        app:destination="@id/leagueFragment" />
 
     <!-- EditTeamInfoFragment -->
     <fragment

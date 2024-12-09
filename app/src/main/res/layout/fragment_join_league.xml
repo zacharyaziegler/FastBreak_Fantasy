@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:textAlignment="center"
     tools:context=".JoinLeagueFragment">
 
@@ -14,9 +15,9 @@
         android:layout_height="46dp"
         android:layout_marginTop="28dp"
         android:ems="6"
-        android:maxLength="6"
         android:hint="Enter code"
         android:inputType="text"
+        android:maxLength="6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
