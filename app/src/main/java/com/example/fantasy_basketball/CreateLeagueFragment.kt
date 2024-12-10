@@ -85,7 +85,8 @@ class CreateLeagueFragment : Fragment() {
                 "scoringType" to "Head to Head Points",
                 "leagueSize" to leagueSize
             ),
-            "draftStatus" to "not_started"
+            "draftStatus" to "not_started",
+            "currentWeek" to "week01"
         )
 
         // Create League document in Firestore
