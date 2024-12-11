@@ -6,17 +6,10 @@ import java.util.*
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.content.Context
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.work.*
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.ParseException
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
 
 
 
