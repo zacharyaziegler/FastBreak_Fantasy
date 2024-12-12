@@ -152,11 +152,6 @@ class PlayerInfoFragment : Fragment() {
                                 tradeButton.text = "Drop"
                                 tradeButton.setOnClickListener {
                                     dropPlayer(playerID,teamID)
-                                    // , set button to "Add"
-                                    tradeButton.text = "Add"
-                                    tradeButton.setOnClickListener {
-                                        addPlayer(playerID,teamID)
-                                    }
 
                                 }
                             } else {
@@ -177,11 +172,7 @@ class PlayerInfoFragment : Fragment() {
                     tradeButton.text = "Add"
                     tradeButton.setOnClickListener {
                         addPlayer(playerID,teamID)
-                        tradeButton.text = "Drop"
-                        tradeButton.setOnClickListener {
 
-                            dropPlayer(playerID, teamID)
-                        }
                     }
                 }
             }.addOnFailureListener {
