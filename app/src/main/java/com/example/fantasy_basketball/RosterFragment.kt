@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.math.roundToInt
 
 class RosterFragment : Fragment(){
 
@@ -201,20 +202,21 @@ class RosterFragment : Fragment(){
         }
     }
 
+
+
     private fun calculateAndDisplayTotalPoints() {
         // Calculate total points from the starting lineup
         val startingTotalPoints = startingLineup.sumOf { player ->
             player?.projection?.pts?.toDoubleOrNull() ?: 0.0
         }
 
-        // Total points for the roster
-        val totalPoints = startingTotalPoints
+        // Convert the total points to a whole number
+        val totalPoints = startingTotalPoints.roundToInt()
 
         // Update the UI with the total points
-        view?.findViewById<TextView>(R.id.text_total_points)?.text =
-            totalPoints.toString()
-
+        view?.findViewById<TextView>(R.id.text_total_points)?.text = totalPoints.toString()
     }
+
 
 
     private suspend fun fetchTeamRosterDetails(
