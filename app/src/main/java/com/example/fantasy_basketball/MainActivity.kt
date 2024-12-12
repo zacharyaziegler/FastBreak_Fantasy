@@ -437,6 +437,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
+
     fun showBottomNavigation() {
         findViewById<BottomNavigationView>(R.id.bottom_navigation)?.visibility = View.VISIBLE
     }

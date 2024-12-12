@@ -6,17 +6,10 @@ import java.util.*
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.content.Context
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import androidx.work.*
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.ParseException
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
 
 
 
@@ -27,7 +20,10 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 private val api: PlayerAPIService = retrofit.create(PlayerAPIService::class.java)
-private val semaphore = Semaphore(5)
+
+private val rateLimitPeriod = 1_000L
+private val maxRequestsPerSecond = 100
+private var lastRequestTimestamps = mutableListOf<Long>()
 
 private fun fetchMatchups(leagueId: String, callback: (List<Map<String, Any>>) -> Unit) {
     val db = FirebaseFirestore.getInstance()
@@ -55,7 +51,7 @@ private fun fetchTeamRosters(leagueId: String, callback: (Map<String, List<Strin
         .get()
         .addOnSuccessListener { documents ->
             val teamRosters = documents.associate { document ->
-                document.id to (document.get("roster") as? List<String> ?: emptyList())
+                document.id to (document.get("Starting") as? List<String> ?: emptyList())
             }
             callback(teamRosters)
         }
@@ -65,7 +61,24 @@ private fun fetchTeamRosters(leagueId: String, callback: (Map<String, List<Strin
 }
 
 private suspend fun fetchPlayerFantasyPoints(playerID: String): Double {
-    semaphore.acquire()
+    var delayTime: Long = 0
+
+    synchronized(lastRequestTimestamps) {
+        val now = System.currentTimeMillis()
+        lastRequestTimestamps = lastRequestTimestamps.filter { it > now - rateLimitPeriod }.toMutableList()
+
+        if (lastRequestTimestamps.size >= maxRequestsPerSecond) {
+            val earliest = lastRequestTimestamps.first()
+            delayTime = earliest + rateLimitPeriod - now
+        }
+
+        lastRequestTimestamps.add(now)
+    }
+
+    if (delayTime > 0) {
+        delay(delayTime)
+    }
+
     return try {
         val response = api.getNBAGamesForPlayer(playerID, "2025", "true")
         if (response.statusCode == 200) {
@@ -74,7 +87,7 @@ private suspend fun fetchPlayerFantasyPoints(playerID: String): Double {
             val currentDate = Calendar.getInstance()
             val oneWeekAgo = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }
 
-            gamesData.entries.filter { (gameKey, _) ->
+            val totalPoints = gamesData.entries.filter { (gameKey, _) ->
                 val gameDateStr = gameKey.substring(0, 8)
                 val gameDate = dateFormat.parse(gameDateStr)
                 gameDate != null && gameDate.after(oneWeekAgo.time) && gameDate.before(currentDate.time)
@@ -82,6 +95,9 @@ private suspend fun fetchPlayerFantasyPoints(playerID: String): Double {
                 val statsBody = gameData as? PlayerGameStatsBody
                 statsBody?.fantasyPoints?.toDoubleOrNull() ?: 0.0
             }
+
+            Log.d("fetchPlayerFantasyPoints", "Player $playerID has fantasy points: $totalPoints")
+            totalPoints
         } else {
             Log.e("fetchPlayerFantasyPoints", "Failed for playerID: $playerID, Status: ${response.statusCode}")
             0.0
@@ -89,8 +105,6 @@ private suspend fun fetchPlayerFantasyPoints(playerID: String): Double {
     } catch (e: Exception) {
         Log.e("fetchPlayerFantasyPoints", "Error fetching fantasy points for playerID: $playerID", e)
         0.0
-    } finally {
-        semaphore.release()
     }
 }
 
@@ -157,7 +171,6 @@ private fun updateMatchupResultsInBatch(
     }
 }
 
-
 fun processLeagueMatchups(leagueId: String, week: String) {
     fetchMatchups(leagueId) { matchups ->
         val weeklyMatchups = matchups.filter { matchup ->
@@ -174,14 +187,12 @@ fun processLeagueMatchups(leagueId: String, week: String) {
                     val team1ID = matchup["team1ID"] as String
                     val team2ID = matchup["team2ID"] as String
 
-
                     val roster1 = teamRosters[team1ID] ?: emptyList()
                     val roster2 = teamRosters[team2ID] ?: emptyList()
 
                     Log.d("processLeagueMatchups", "Calculating points for matchup $matchupId")
                     Log.d("processLeagueMatchups", "Team1 ($team1ID) roster: $roster1")
                     Log.d("processLeagueMatchups", "Team2 ($team2ID) roster: $roster2")
-
 
                     val teamScores = calculateTeamPoints(
                         mapOf(team1ID to roster1, team2ID to roster2)
@@ -192,7 +203,6 @@ fun processLeagueMatchups(leagueId: String, week: String) {
 
                     Log.d("processLeagueMatchups", "Team1 ($team1ID) score: $team1Score")
                     Log.d("processLeagueMatchups", "Team2 ($team2ID) score: $team2Score")
-
 
                     matchupResults.add(Triple(matchupId, team1Score, team2Score))
                     teamDetails.add(Pair(matchupId, Pair(team1ID, team2ID)))
@@ -252,6 +262,5 @@ private fun incrementWeek(currentWeek: String, callback: (String?) -> Unit) {
         callback("week${String.format("%02d", weekNumber + 1)}")
     } else {
         callback(null) // Return null if already at week19
-    }}
-
-
+    }
+}
