@@ -21,7 +21,6 @@ class EditTeamInfoFragment : Fragment() {
     private lateinit var profilePicUrlEditText: EditText
     private lateinit var saveTeamButton: Button
     private lateinit var editTeamImageView: ImageView
-    private lateinit var toolbar: Toolbar
     private lateinit var firestore: FirebaseFirestore
 
     private lateinit var leagueId: String
@@ -51,14 +50,14 @@ class EditTeamInfoFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_edit_team_info, container, false)
 
         // Initialize views
-        toolbar = view.findViewById(R.id.editTeamToolbar)
+//        toolbar = view.findViewById(R.id.editTeamToolbar)
         teamNameEditText = view.findViewById(R.id.teamNameEditText)
         profilePicUrlEditText = view.findViewById(R.id.profilePicUrlEditText)
         saveTeamButton = view.findViewById(R.id.saveTeamButton)
         editTeamImageView = view.findViewById(R.id.teamImageView)
 
         // Set up the toolbar
-        setupToolbar()
+//        setupToolbar()
 
         // Prepopulate the EditTexts with the current data
         teamNameEditText.setText(currentTeamName)
@@ -82,12 +81,12 @@ class EditTeamInfoFragment : Fragment() {
         return view
     }
 
-    private fun setupToolbar() {
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back) // Use a back arrow icon
-        toolbar.setNavigationOnClickListener {
-            findNavController().popBackStack() // Navigate back to the previous fragment
-        }
-    }
+//    private fun setupToolbar() {
+//        toolbar.setNavigationIcon(R.drawable.ic_arrow_back) // Use a back arrow icon
+//        toolbar.setNavigationOnClickListener {
+//            findNavController().popBackStack() // Navigate back to the previous fragment
+//        }
+//    }
 
     private fun saveTeamInfo() {
         val teamName = teamNameEditText.text.toString().trim()
