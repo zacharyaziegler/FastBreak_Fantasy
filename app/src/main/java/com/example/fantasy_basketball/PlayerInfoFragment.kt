@@ -121,17 +121,11 @@ class PlayerInfoFragment : Fragment() {
 
 
     private fun updateTradeButtonText(playerID: String, tradeButton: Button) {
-        // Retrieve leagueID and teamID from SharedDataViewModel
         val leagueID = sharedViewModel.leagueID
         val teamID = sharedViewModel.teamID
 
         if (leagueID != null && teamID != null) {
             val db = FirebaseFirestore.getInstance()
-
-            // Reference to the draftedPlayers collection
-            val draftedPlayersRef = db.collection("Leagues")
-                .document(leagueID)
-                .collection("draftedPlayers")
 
             // Reference to the team's document
             val teamRef = db.collection("Leagues")
@@ -139,49 +133,73 @@ class PlayerInfoFragment : Fragment() {
                 .collection("Teams")
                 .document(teamID)
 
-            // Check if player is in the draftedPlayers collection
-            draftedPlayersRef.document(playerID).get().addOnSuccessListener { draftedDocument ->
-                if (draftedDocument.exists()) {
-                    // Player is drafted, now check if they are in the roster
-                    teamRef.get().addOnSuccessListener { teamDocument ->
-                        if (teamDocument.exists()) {
-                            val roster = teamDocument.get("roster") as? List<String> ?: emptyList()
+            // Reference to the draftedPlayers document
+            val draftedPlayersRef = db.collection("Leagues")
+                .document(leagueID)
+                .collection("draftedPlayers")
+                .document(playerID)
 
-                            if (roster.contains(playerID)) {
-                                // Player is on the roster, set button to "Drop"
-                                tradeButton.text = "Drop"
-                                tradeButton.setOnClickListener {
-                                    dropPlayer(playerID,teamID)
+            // Add SnapshotListener for the team's roster
+            teamRef.addSnapshotListener { teamSnapshot, teamError ->
+                if (teamError != null) {
+                    Log.e("PlayerInfoFragment", "Failed to fetch team data", teamError)
+                    return@addSnapshotListener
+                }
 
-                                }
-                            } else {
-                                // Player is drafted but not on the roster, set button to "Trade"
+                if (teamSnapshot != null && teamSnapshot.exists()) {
+                    val roster = teamSnapshot.get("roster") as? List<String> ?: emptyList()
+
+                    // Add SnapshotListener for the draftedPlayers document
+                    draftedPlayersRef.addSnapshotListener { draftedSnapshot, draftedError ->
+                        if (draftedError != null) {
+                            Log.e("PlayerInfoFragment", "Failed to fetch drafted player data", draftedError)
+                            return@addSnapshotListener
+                        }
+
+                        if (draftedSnapshot != null && draftedSnapshot.exists()) {
+                            // Player is drafted but not on the roster, set button to "Trade"
+                            if (!roster.contains(playerID)) {
                                 tradeButton.text = "Trade"
                                 tradeButton.setOnClickListener {
                                     tradePlayer(playerID)
+                                    updateTradeButtonText(playerID, tradeButton) // Re-run the function after action
                                 }
                             }
                         } else {
-                            Log.e("PlayerInfoFragment", "Team document not found.")
+                            // Player is not drafted, set button to "Add"
+                            if (!roster.contains(playerID)) {
+                                tradeButton.text = "Add"
+                                tradeButton.setOnClickListener {
+                                    addPlayer(playerID, teamID)
+                                    updateTradeButtonText(playerID, tradeButton) // Re-run the function after action
+                                }
+                            }
                         }
-                    }.addOnFailureListener {
-                        Log.e("PlayerInfoFragment", "Failed to fetch team data", it)
+
+                        if (roster.contains(playerID)) {
+                            // Player is on the roster, set button to "Drop"
+                            tradeButton.text = "Drop"
+                            tradeButton.setOnClickListener {
+                                dropPlayer(playerID, teamID)
+                                updateTradeButtonText(playerID, tradeButton) // Re-run the function after action
+                            }
+                        }
                     }
                 } else {
-                    // Player is not drafted, set button to "Add"
-                    tradeButton.text = "Add"
-                    tradeButton.setOnClickListener {
-                        addPlayer(playerID,teamID)
-
-                    }
+                    Log.e("PlayerInfoFragment", "Team document not found.")
                 }
-            }.addOnFailureListener {
-                Log.e("PlayerInfoFragment", "Failed to check drafted status", it)
             }
         } else {
             Log.e("PlayerInfoFragment", "LeagueID or TeamID is null")
         }
     }
+
+
+
+
+
+
+
 
     private fun tradePlayer(playerID: String) {
         val leagueID = sharedViewModel.leagueID

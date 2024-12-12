@@ -48,6 +48,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
@@ -722,111 +724,85 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    // Function to add a player to a team
+    public fun addPlayer(playerID: String, teamID: String) {
+        val leagueID = sharedViewModel.leagueID ?: return
+        val db = FirebaseFirestore.getInstance()
 
-    public fun addPlayer(playerID: String,teamID: String ) {
-        val leagueID = sharedViewModel.leagueID
+        val teamRef = db.collection("Leagues")
+            .document(leagueID)
+            .collection("Teams")
+            .document(teamID)
 
+        val draftedPlayersRef = db.collection("Leagues")
+            .document(leagueID)
+            .collection("draftedPlayers")
+            .document(playerID)
 
-        if (leagueID != null && teamID != null) {
-            val db = FirebaseFirestore.getInstance()
+        // Perform all updates in a transaction
+        db.runTransaction { transaction ->
+            val teamSnapshot = transaction.get(teamRef)
+            val roster = teamSnapshot.get("roster") as? List<*> ?: emptyList<String>()
 
-            val teamRef = db.collection("Leagues")
-                .document(leagueID)
-                .collection("Teams")
-                .document(teamID)
-
-            val draftedPlayersRef = db.collection("Leagues")
-                .document(leagueID)
-                .collection("draftedPlayers")
-
-            // Fetch the current roster size
-            teamRef.get()
-                .addOnSuccessListener { document ->
-                    if (document != null && document.contains("roster")) {
-                        val roster = document.get("roster") as? List<*>
-                        if (roster != null && roster.size >= 13) {
-                            // Show a toast if the roster is full
-                            Toast.makeText(this, "Roster full: 13-player limit reached", Toast.LENGTH_SHORT).show()
-                        } else {
-                            // Add player to roster and Bench
-                            teamRef.update(
-                                mapOf(
-                                    "roster" to FieldValue.arrayUnion(playerID),
-                                    "Bench" to FieldValue.arrayUnion(playerID)
-                                )
-                            ).addOnSuccessListener {
-                                // Add the player to the draftedPlayers collection
-                                val draftedPlayerData = mapOf(
-                                    "teamID" to teamID // Add any other necessary fields
-                                )
-
-                                draftedPlayersRef.document(playerID)
-                                    .set(draftedPlayerData)
-                                    .addOnSuccessListener {
-                                        Toast.makeText(this, "Player added to Roster", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .addOnFailureListener {
-                                        Toast.makeText(this, "Failed to add player to draftedPlayers", Toast.LENGTH_SHORT).show()
-                                    }
-                            }.addOnFailureListener {
-                                Toast.makeText(this, "Failed to add player", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    } else {
-                        Toast.makeText(this, "Roster data is unavailable.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to fetch roster data.", Toast.LENGTH_SHORT).show()
-                }
-        } else {
-            Toast.makeText(this, "LeagueID or TeamID is null", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    // Action to drop a player from the team
-    public fun dropPlayer(playerID: String,teamID: String ) {
-        val leagueID = sharedViewModel.leagueID
-
-
-        if (leagueID != null && teamID != null) {
-            val db = FirebaseFirestore.getInstance()
-
-            // Reference to the team document
-            val teamRef = db.collection("Leagues")
-                .document(leagueID)
-                .collection("Teams")
-                .document(teamID)
-
-            // Fetch the current team data
-            teamRef.get().addOnSuccessListener { documentSnapshot ->
-                if (documentSnapshot.exists()) {
-                    val startingPlayers = documentSnapshot.get("Starting") as? List<String> ?: emptyList()
-
-                    // Check if the player is in the Starting lineup
-                    if (startingPlayers.contains(playerID)) {
-                        // Replace the player slot with an empty string
-                        val updatedStarting = startingPlayers.map { if (it == playerID) "" else it }
-                        teamRef.update("Starting", updatedStarting)
-                            .addOnSuccessListener {
-                                // Proceed with removing the player from other arrays
-                                removePlayerFromTeam(teamRef, playerID)
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(this, "Failed to update Starting lineup", Toast.LENGTH_SHORT).show()
-                            }
-                    } else {
-                        // If not in Starting, remove the player from other arrays directly
-                        removePlayerFromTeam(teamRef, playerID)
-                    }
-                }
-            }.addOnFailureListener {
-                Toast.makeText(this, "Failed to fetch team data", Toast.LENGTH_SHORT).show()
+            if (roster.size >= 13) {
+                throw FirebaseFirestoreException(
+                    "Roster is full: 13-player limit reached",
+                    FirebaseFirestoreException.Code.ABORTED
+                )
             }
-        } else {
-            Toast.makeText(this, "LeagueID or TeamID is null", Toast.LENGTH_SHORT).show()
+
+            // Update the team's roster and Bench
+            transaction.update(teamRef, "roster", FieldValue.arrayUnion(playerID))
+            transaction.update(teamRef, "Bench", FieldValue.arrayUnion(playerID))
+
+            // Update or set player in draftedPlayers collection
+            transaction.set(draftedPlayersRef, mapOf("teamID" to teamID), SetOptions.merge())
+        }.addOnSuccessListener {
+            Toast.makeText(this, "Player successfully added to roster.", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Failed to add player: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+    // Function to drop a player from the team
+    public fun dropPlayer(playerID: String, teamID: String) {
+        val leagueID = sharedViewModel.leagueID ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        val teamRef = db.collection("Leagues")
+            .document(leagueID)
+            .collection("Teams")
+            .document(teamID)
+
+        val draftedPlayersRef = db.collection("Leagues")
+            .document(leagueID)
+            .collection("draftedPlayers")
+            .document(playerID)
+
+        db.runTransaction { transaction ->
+            val teamSnapshot = transaction.get(teamRef)
+            val startingPlayers = teamSnapshot.get("Starting") as? List<String> ?: emptyList()
+
+            // Remove player from the Starting lineup if present
+            if (startingPlayers.contains(playerID)) {
+                val updatedStarting = startingPlayers.map { if (it == playerID) "" else it }
+                transaction.update(teamRef, "Starting", updatedStarting)
+            }
+
+            // Remove player from roster and Bench
+            transaction.update(teamRef, "roster", FieldValue.arrayRemove(playerID))
+            transaction.update(teamRef, "Bench", FieldValue.arrayRemove(playerID))
+
+            // Update draftedPlayers to remove teamID instead of deleting
+            transaction.update(draftedPlayersRef, "teamID", FieldValue.delete())
+        }.addOnSuccessListener {
+            Toast.makeText(this, "Player successfully dropped from team.", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Failed to drop player: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 
     // Helper function to remove player from all relevant arrays
     private fun removePlayerFromTeam(teamRef: DocumentReference, playerID: String) {
