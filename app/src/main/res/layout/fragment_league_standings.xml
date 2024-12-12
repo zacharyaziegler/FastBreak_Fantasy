@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAEBD7" >
+
+    <!-- Title Row for Rank, Team, FP -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#F4DD83"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:layout_marginBottom="5sp">
+
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="Rank"
+            android:textColor="#5C4033"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="5sp"/>
+
+        <TextView
+            android:layout_width="315dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:text="Team"
+            android:textColor="#5C4033"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView for standings -->
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/leagueStandingsRecyclerView"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"/>
+
+    <!-- No Data TextView -->
+<TextView
+    android:id="@+id/noDataTextView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:text="No standings available."
+    android:textSize="18sp"
+    android:textColor="#5C4033"
+    android:visibility="gone"/>
+</LinearLayout>

@@ -13,7 +13,6 @@ class PlayerAdapter(
     private val onPlayerClick: (Player) -> Unit // Callback for click event
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    // Constants for view types
     private val TYPE_HEADER = 0
     private val TYPE_ITEM = 1
 
@@ -29,15 +28,24 @@ class PlayerAdapter(
         val playerAssists: TextView = view.findViewById(R.id.playerAssists)
     }
 
+    // ViewHolder class for the header item
+    class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_player_search_list, parent, false)
-        return PlayerViewHolder(view)
+        return if (viewType == TYPE_HEADER) {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.sticky_header_layout, parent, false) // Inflate the header layout
+            HeaderViewHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.fragment_player_search_list, parent, false)
+            PlayerViewHolder(view)
+        }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is PlayerViewHolder) {
-            val player = playerList[position]
+            val player = playerList[position - 1] // Offset by 1 to skip the header
 
             // Set player's basic info
             holder.playerName.text = player.longName
@@ -60,7 +68,7 @@ class PlayerAdapter(
 
             // Set player's stats (if available)
             player.stats?.let { stats ->
-                holder.playerPoints.text =  stats.pts ?: "--"
+                holder.playerPoints.text = stats.pts ?: "--"
                 holder.playerRebounds.text = stats.reb ?: "--"
                 holder.playerAssists.text = stats.ast ?: "--"
             } ?: run {
@@ -77,7 +85,11 @@ class PlayerAdapter(
     }
 
     override fun getItemCount(): Int {
-        return playerList.size
+        return playerList.size + 1 // Add 1 for the header
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) TYPE_HEADER else TYPE_ITEM
     }
 
     fun updateList(newPlayerList: MutableList<Player>) {

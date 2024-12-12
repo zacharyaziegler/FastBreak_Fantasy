@@ -2,6 +2,7 @@ package com.example.fantasy_basketball
 
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
@@ -11,8 +12,10 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -22,6 +25,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
@@ -30,6 +35,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
@@ -37,6 +43,8 @@ import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
@@ -73,6 +81,14 @@ class MainActivity : AppCompatActivity() {
         // Use the helper class to check permissions and schedule WorkManager
         //WorkManagerHelper.checkAndRequestNotificationPermission(this)
         //WorkManagerHelper.scheduleWorkManager(this)
+
+        // Initialize Firebase
+                FirebaseApp.initializeApp(this)
+
+        // Set up Firebase App Check with Play Integrity
+        FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            PlayIntegrityAppCheckProviderFactory.getInstance()
+        )
         firestore = FirebaseFirestore.getInstance()
 
         val requestPermissionLauncher = registerForActivityResult(
@@ -179,6 +195,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
             //
 
            // navController.navigate(R.id.loginFragment)
@@ -205,6 +222,11 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.leagueChatFragment)
                     true
                 }
+                R.id.ic_standing -> {
+                    navController.navigate(R.id.leagueStandingsFragment)
+                    true
+                }
+
                 else -> false
             }
         }
@@ -234,6 +256,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+
+
     }
 
     private fun updateToolbarNavigation() {
@@ -261,6 +285,7 @@ class MainActivity : AppCompatActivity() {
         updateToolbarNavigation()
         updateBottomNavigationVisibility()
         updateToolbarTitle()
+        updateTradeListenerVisibility()
     }
 
     fun updateToolbarTitle() {
@@ -270,11 +295,28 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
+    fun updateTradeListenerVisibility() {
+        // Check if the current active fragment is one of the relevant ones
+        if (activeFragment == "LeagueFragment" || activeFragment == "RosterFragment" ||
+            activeFragment == "MatchupFragment" || activeFragment == "PlayerSearchFragment") {
+            val leagueID = sharedViewModel.leagueID
+            val teamID = sharedViewModel.teamID
+            // Start the trade listener when relevant fragment is active
+            if (leagueID != null && teamID != null) {
+
+                listenForTradeOffers(leagueID, teamID)
+
+            }
+        }
+
+    }
+
 
 
     fun updateBottomNavigationVisibility() {
         if (activeFragment == "HomeFragment" || activeFragment == "RulesFragment" || activeFragment == "SettingsFragment"||activeFragment =="LeagueFragment") {
             bottomNavigation.visibility = View.GONE // Hide bottom navigation for HomeFragment, RulesFragment, and SettingsFragment
+
         } else {
             bottomNavigation.visibility = View.VISIBLE // Show bottom navigation for other fragments
         }
@@ -430,8 +472,194 @@ class MainActivity : AppCompatActivity() {
 
  */
 
+    // Listen for trade offers
+    private fun listenForTradeOffers(leagueID: String, teamID: String) {
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("Leagues")
+            .document(leagueID)
+            .collection("Trades")
+            .whereEqualTo("currentTeamID", teamID) // Filter by the user's team
+            .whereEqualTo("status", "Pending") // Only listen for pending trade offers
+            .addSnapshotListener { tradesSnapshot, error ->
+                if (error != null) {
+                    Log.e("TradeListener", "Error fetching trades: ", error)
+                    return@addSnapshotListener
+                }
+
+                tradesSnapshot?.documents?.forEach { tradeDoc ->
+                    val offeredPlayers = tradeDoc.get("offeredPlayers") as? List<String> ?: emptyList()
+                    val playerToTradeFor = tradeDoc.getString("playerToTradeFor")
+
+                    if (!playerToTradeFor.isNullOrBlank()) {
+                        fetchPlayerDetailsAndShowDialog(tradeDoc, playerToTradeFor, offeredPlayers)
+                    }
+                }
+            }
+    }
+
+    private fun fetchPlayerDetailsAndShowDialog(
+        tradeDoc: DocumentSnapshot,
+        playerToTradeFor: String,
+        offeredPlayers: List<String>
+    ) {
+        val db = FirebaseFirestore.getInstance()
+
+        // Reference to the player the user wants to trade for
+        val playerToTradeForRef = db.collection("players").document(playerToTradeFor)
+        // Fetch offered players' details
+        val offeredPlayersFetches = offeredPlayers.map { playerID ->
+            db.collection("players").document(playerID).get()
+        }
+
+        // Fetch the player to trade for details
+        playerToTradeForRef.get().addOnSuccessListener { playerDoc ->
+            val playerToTradeForName = playerDoc.getString("longName") ?: "Unknown Player"
+
+            // Wait for all offered players to be fetched
+            Tasks.whenAllSuccess<DocumentSnapshot>(offeredPlayersFetches).addOnSuccessListener { results ->
+                val offeredPlayerNames = results.map { it.getString("longName") ?: "Unknown Player" }
+
+                // Map the results to Player objects
+                val offeredPlayers = results.mapNotNull { createPlayerFromDocument(it) }
+
+                // Pass tradeDoc, playerToTradeFor, and offeredPlayers to the dialog
+                showTradeDialog(createPlayerFromDocument(playerDoc), offeredPlayers, tradeDoc)
+            }.addOnFailureListener {
+                Log.e("TradeListener", "Failed to fetch offered players.")
+            }
+        }.addOnFailureListener {
+            Log.e("TradeListener", "Failed to fetch player to trade for.")
+        }
+    }
 
 
+    private fun showTradeDialog(playerToTradeFor: Player?, offeredPlayers: List<Player>, tradeDoc: DocumentSnapshot) {
+        // Inflate dialog view
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_player_list, null)
+
+        // Create the dialog
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setPositiveButton("Accept") { _, _ ->
+                playerToTradeFor?.let {
+                    acceptTrade(tradeDoc)
+
+                }
+            }
+            .setNegativeButton("Reject") { _, _ ->
+                playerToTradeFor?.let {
+                    rejectTrade(tradeDoc)
+
+                }
+            }
+            .create()
+
+        // Set up RecyclerView for "Player to Trade For"
+        val playerToTradeForRecyclerView = dialogView.findViewById<RecyclerView>(R.id.playerToTradeForRecyclerView)
+        playerToTradeForRecyclerView.layoutManager = LinearLayoutManager(this)
+        val playerToTradeForAdapter = PlayerAdapter(mutableListOf()) {}
+        playerToTradeForRecyclerView.adapter = playerToTradeForAdapter
+
+        // Set up RecyclerView for "Offered Players"
+        val offeredPlayersRecyclerView = dialogView.findViewById<RecyclerView>(R.id.offeredPlayersRecyclerView)
+        offeredPlayersRecyclerView.layoutManager = LinearLayoutManager(this)
+        val offeredPlayersAdapter = PlayerAdapter(mutableListOf()) {}
+        offeredPlayersRecyclerView.adapter = offeredPlayersAdapter
+
+        // Populate the adapters
+        playerToTradeFor?.let {
+            playerToTradeForAdapter.updateList(mutableListOf(it))
+        }
+        offeredPlayersAdapter.updateList(offeredPlayers.toMutableList())
+
+        // Show the dialog
+        dialog.show()
+    }
+
+
+
+    // Accept the trade and update its status
+    private fun acceptTrade(tradeDoc: DocumentSnapshot) {
+        val tradeID = tradeDoc.id
+        val leagueID = sharedViewModel.leagueID ?: return
+        val PlayerInfoFragment = PlayerInfoFragment()
+        //PlayerInfoFragment.addPlayer("PLayerID", TeamID)
+       // PlayerInfoFragment.dropPlayer("PLayerID",TeamID)
+        FirebaseFirestore.getInstance()
+            .collection("Leagues")
+            .document(leagueID)
+            .collection("Trades")
+            .document(tradeID)
+            .update("status", "Accepted")
+            .addOnSuccessListener {
+                Toast.makeText(this, "Trade accepted!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to accept trade.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // Reject the trade and update its status
+    private fun rejectTrade(tradeDoc: DocumentSnapshot) {
+        val tradeID = tradeDoc.id
+        val leagueID = sharedViewModel.leagueID ?: return
+
+        FirebaseFirestore.getInstance()
+            .collection("Leagues")
+            .document(leagueID)
+            .collection("Trades")
+            .document(tradeID)
+            .update("status", "Rejected")
+            .addOnSuccessListener {
+                Toast.makeText(this, "Trade rejected.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to reject trade.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
+    // Create Player object from Firestore document
+    private fun createPlayerFromDocument(doc: DocumentSnapshot): Player {
+        return Player(
+            playerID = doc.id,
+            longName = doc.getString("longName") ?: "Unknown",
+            pos = doc.getString("position") ?: "UTIL",
+            projection = doc.get("Projections")?.let { projections ->
+                val projectionsMap = projections as Map<*, *>
+                PlayerProjection(
+                    fantasyPoints = projectionsMap["fantasyPoints"]?.toString() ?: "0.0",
+                    pts = projectionsMap["pts"]?.toString() ?: "0.0",
+                    reb = projectionsMap["reb"]?.toString() ?: "0.0",
+                    ast = projectionsMap["ast"]?.toString() ?: "0.0",
+                    stl = projectionsMap["stl"]?.toString() ?: "0.0",
+                    blk = projectionsMap["blk"]?.toString() ?: "0.0",
+                    TOV = projectionsMap["TOV"]?.toString() ?: "0.0"
+                )
+            },
+            injury = doc.get("Injury")?.let { injury ->
+                val injuryMap = injury as Map<*, *>
+                Injury(
+                    status = injuryMap["status"]?.toString(),
+                    description = injuryMap["description"]?.toString()
+                )
+            },
+            stats = doc.get("TotalStats")?.let { stats ->
+                val statsMap = stats as Map<*, *>
+                PlayerStats(
+                    pts = statsMap["pts"]?.toString() ?: "0.0",
+                    reb = statsMap["reb"]?.toString() ?: "0.0",
+                    ast = statsMap["ast"]?.toString() ?: "0.0",
+                    stl = statsMap["stl"]?.toString() ?: "0.0",
+                    blk = statsMap["blk"]?.toString() ?: "0.0",
+                    TOV = statsMap["TOV"]?.toString() ?: "0.0"
+                )
+            },
+            team = doc.getString("team") ?: "",
+            nbaComHeadshot = doc.getString("nbaComHeadshot") ?: ""
+        )
+    }
 
 
 

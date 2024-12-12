@@ -230,5 +230,15 @@
             android:name="leagueId"
             app:argType="string" />
     </fragment>
+
+    <!--LeagueStandingFragment-->
+    <fragment
+        android:id="@+id/leagueStandingsFragment"
+        android:name="com.example.fantasy_basketball.LeagueStandingsFragment"
+        tools:layout="@layout/fragment_league_standings">
+        <argument
+            android:name="leagueId"
+            app:argType="string" />
+    </fragment>
 </navigation>
 
