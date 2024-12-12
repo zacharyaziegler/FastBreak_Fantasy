@@ -205,6 +205,11 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.leagueChatFragment)
                     true
                 }
+                R.id.ic_standing -> {
+                    navController.navigate(R.id.leagueStandingsFragment)
+                    true
+                }
+
                 else -> false
             }
         }

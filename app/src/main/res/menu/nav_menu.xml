@@ -17,5 +17,9 @@
         android:id="@+id/ic_Chat"
         android:icon="@drawable/ic_chat"
         android:title="Chat"/>
+    <item
+        android:id="@+id/ic_standing"
+        android:icon="@drawable/ic_standing"
+        android:title="Standing"/>
 
 </menu>
