@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         //scheduleWeeklyPlayerProjectionsWorker()
 
         //scheduleLeagueProcessing()
-        //triggerOneTimeLeagueProcessing()
+//        triggerOneTimeLeagueProcessing()
 
         //processLeagueMatchups("g11QJdRoaR7WhJIuya3A", "week01")
 
@@ -462,7 +462,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-/*
+
     fun triggerOneTimeLeagueProcessing() {
         val oneTimeWorkRequest = OneTimeWorkRequestBuilder<ProcessLeaguesWorker>().build()
 
@@ -475,7 +475,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "One-time ProcessLeaguesWorker triggered.")
     }
 
- */
+
 
     // Listen for trade offers
     private fun listenForTradeOffers(leagueID: String, teamID: String) {
