@@ -56,13 +56,4 @@
     android:textColor="#A1887F" />
     </LinearLayout>
 
-    <!-- Points -->
-<TextView
-    android:id="@+id/teamPoints"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:textSize="16sp"
-    android:textColor="#5C4033"
-    android:layout_marginStart="8dp" />
 </LinearLayout>

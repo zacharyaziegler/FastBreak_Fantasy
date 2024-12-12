@@ -34,14 +34,6 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="FP"
-            android:textColor="#5C4033"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginRight="5sp"/>
     </LinearLayout>
 
     <!-- RecyclerView for standings -->

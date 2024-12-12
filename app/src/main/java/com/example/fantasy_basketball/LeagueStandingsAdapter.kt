@@ -18,7 +18,6 @@ class LeagueStandingsAdapter(
         val teamIcon: ImageView = itemView.findViewById(R.id.teamIcon)
         val teamName: TextView = itemView.findViewById(R.id.teamName)
         val teamRecord: TextView = itemView.findViewById(R.id.teamRecord)
-        val teamPoints: TextView = itemView.findViewById(R.id.teamPoints)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,7 +31,6 @@ class LeagueStandingsAdapter(
         holder.teamRank.text = (position + 1).toString()
         holder.teamName.text = team.name
         holder.teamRecord.text = "${team.wins}-${team.losses}"
-        holder.teamPoints.text = String.format("%.2f", team.points)
 
         when (position) {
             0 -> holder.teamRank.setTextColor(
