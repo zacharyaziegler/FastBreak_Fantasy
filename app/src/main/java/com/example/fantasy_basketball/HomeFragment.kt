@@ -82,10 +82,14 @@ class HomeFragment : Fragment() {
         view.findViewById<Button>(R.id.joinLeagueBtn).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_joinLeagueFragment)
         }
+
     }
 
     override fun onResume() {
         super.onResume()
+        sharedViewModel.leagueID = null
+        sharedViewModel.teamID = null
+        (activity as? MainActivity)?.updateTradeListenerVisibility()
         (activity as? MainActivity)?.setActiveFragment("HomeFragment")
     }
 

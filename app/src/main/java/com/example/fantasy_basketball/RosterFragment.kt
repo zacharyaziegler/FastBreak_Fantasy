@@ -50,7 +50,7 @@ class RosterFragment : Fragment(){
         }
         leagueId = sharedViewModel.leagueID.toString()
         teamId = sharedViewModel.teamID.toString()
-
+        (activity as? MainActivity)?.updateTradeListenerVisibility()
 // Create the RosterAdapter for starting lineup
         startingLineupAdapter = RosterAdapter(
             startingLineup,
