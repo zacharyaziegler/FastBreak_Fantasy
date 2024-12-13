@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "478992634864-5o67p69j4okg7j4n9shj6h7h46b67pi3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fantasy_basketball",
+            "certificate_hash": "772723336f60c71012f6a6bb62fb4aee53d59c67"
+          }
+        },
+        {
+          "client_id": "478992634864-dd55vu6srd8930k9d3vjurpl9ec639m8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fantasy_basketball",
+            "certificate_hash": "8a12effb6bb176f7ab1fb4f5a3fbab1cf2bf1a7c"
+          }
+        },
+        {
           "client_id": "478992634864-hnishkhsv89jvk3sc55fed5tvm3vqb1v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
