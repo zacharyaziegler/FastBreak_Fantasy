@@ -49,6 +49,7 @@ import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
@@ -69,7 +70,9 @@ class MainActivity : AppCompatActivity() {
     private val sharedViewModel: SharedDataViewModel by viewModels()
     private lateinit var navController : NavController
     private lateinit var bottomNavigation: BottomNavigationView
-    private var isTradeListenerActive = false //
+    // Add a flag to track whether the listener is already active
+    private var tradeListenerSet = false
+    private var tradeListenerRegistration: ListenerRegistration? = null
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -255,12 +258,18 @@ class MainActivity : AppCompatActivity() {
         auth.addAuthStateListener { firebaseAuth ->
             if (firebaseAuth.currentUser != null) {
                 // User is signed in
+                toolbar.visibility = View.VISIBLE
                 updateBottomNavigationVisibility()
             } else {
                 // User is not signed in
+                toolbar.visibility = View.GONE
                 bottomNavigation.visibility = View.GONE
             }
         }
+
+    /*    if(sharedViewModel.leagueID != null && sharedViewModel.teamID !=null){
+            listenForTradeOffers(sharedViewModel.leagueID.toString(), sharedViewModel.teamID.toString())
+        }*/
 
 
 
@@ -291,7 +300,7 @@ class MainActivity : AppCompatActivity() {
         updateToolbarNavigation()
         updateBottomNavigationVisibility()
         updateToolbarTitle()
-        updateTradeListenerVisibility()
+       // updateTradeListenerVisibility()
     }
 
     fun updateToolbarTitle() {
@@ -301,22 +310,7 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
-    fun updateTradeListenerVisibility() {
-        // Check if the current active fragment is one of the relevant ones
 
-        if (activeFragment == "LeagueFragment" || activeFragment == "RosterFragment" ||
-            activeFragment == "MatchupFragment" || activeFragment == "PlayerSearchFragment") {
-            val leagueID = sharedViewModel.leagueID
-            val teamID = sharedViewModel.teamID
-            // Start the trade listener when relevant fragment is active
-            if (leagueID != null && teamID != null ) {
-
-                listenForTradeOffers(leagueID, teamID)
-
-            }
-        }
-
-    }
 
 
 
@@ -463,8 +457,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
     fun triggerOneTimeLeagueProcessing() {
         val oneTimeWorkRequest = OneTimeWorkRequestBuilder<ProcessLeaguesWorker>().build()
 
@@ -479,11 +471,36 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
+    fun updateTradeListenerVisibility() {
+        val leagueID = sharedViewModel.leagueID
+        val teamID = sharedViewModel.teamID
+
+        // Check if teamID and leagueID are non-null
+        if (leagueID != null && teamID != null) {
+            // Start the trade listener only if it hasn't been set already
+            if (!tradeListenerSet) {
+                listenForTradeOffers(leagueID, teamID)
+                tradeListenerSet = true
+            }
+        } else {
+            // Remove the listener if either ID is null
+            tradeListenerRegistration?.remove()
+            tradeListenerRegistration = null
+            tradeListenerSet = false
+        }
+    }
+
     // Listen for trade offers
     private fun listenForTradeOffers(leagueID: String, teamID: String) {
+        // Remove any existing listener to prevent duplicates
+        tradeListenerRegistration?.remove()
+        tradeListenerRegistration = null
+
         val db = FirebaseFirestore.getInstance()
 
-        db.collection("Leagues")
+        // Add new listener only if leagueID and teamID are valid
+        tradeListenerRegistration = db.collection("Leagues")
             .document(leagueID)
             .collection("Trades")
             .whereEqualTo("currentTeamID", teamID) // Filter by the user's team
@@ -498,6 +515,7 @@ class MainActivity : AppCompatActivity() {
                     val offeredPlayers = tradeDoc.get("offeredPlayers") as? List<String> ?: emptyList()
                     val playerToTradeFor = tradeDoc.getString("playerToTradeFor")
 
+                    // Ensure we only show the pop-up if playerToTradeFor is valid
                     if (!playerToTradeFor.isNullOrBlank()) {
                         fetchPlayerDetailsAndShowDialog(tradeDoc, playerToTradeFor, offeredPlayers)
                     }
@@ -540,7 +558,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showTradeDialog(playerToTradeFor: Player?, offeredPlayers: List<Player>, tradeDoc: DocumentSnapshot) {
         // Inflate dialog view
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_player_list, null)
@@ -551,13 +568,11 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Accept") { _, _ ->
                 playerToTradeFor?.let {
                     acceptTrade(tradeDoc)
-
                 }
             }
             .setNegativeButton("Reject") { _, _ ->
                 playerToTradeFor?.let {
                     rejectTrade(tradeDoc)
-
                 }
             }
             .create()

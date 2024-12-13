@@ -106,6 +106,7 @@ class LeagueFragment : Fragment() {
 
 // Load league and team data
         loadLeagueAndTeamData()
+
         return view
     }
 
@@ -390,6 +391,7 @@ class LeagueFragment : Fragment() {
         //fetchLeagueDetails()
         // Make sure global navigation bar is visible when in LeagueFragment
        // (activity as? MainActivity)?.showBottomNavigation()
+
         (activity as? MainActivity)?.setActiveFragment("LeagueFragment")
     }
 }
